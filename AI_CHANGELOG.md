@@ -5,6 +5,50 @@
 
 ---
 
+## v4.0.0-ai.44 (2026-09-07) 🚀 启动页自定义 + 楼中楼图片占位
+
+### 🇨🇳 中文
+
+**新增「启动页」自定义设置 + 楼中楼图片占位优化**
+
+- 新增启动页设置：可在「首页 / 动态 / 消息 / 我」中任选启动时默认进入的页面（#30）
+- 启动页与「隐藏动态入口」联动：动态被隐藏时自动回退首页，不越界不崩溃
+- 楼中楼带图评论不再丢失：内容渲染补全新图片类型分支，详情页整条保留（#27）
+- 帖子页楼中楼预览补「[图片]」占位提示，复制语义同步一致
+- 楼中楼图片支持点击查看大图（复用主楼 PhotoView 机制）
+
+### 🇬🇧 English
+
+**Startup page preference + sub-thread image placeholder**
+
+- New "Startup Page" setting: choose the default tab among Home / Explore / Notifications / Me ( #30 )
+- Graceful fallback when Explore tab is hidden — no crash, no out-of-bounds
+- Sub-thread image comments are no longer dropped: new image content type branch added, entries fully preserved ( #27 )
+- Inline sub-thread previews now show an "[Image]" placeholder; copy semantics aligned
+- Sub-thread images support tap-to-view via the existing PhotoView mechanism
+
+### 🇯🇵 日本語
+
+**起動ページ設定 + サブスレッド画像プレースホルダ**
+
+- 「起動ページ」設定を追加：ホーム / ダイナミック / 通知 / マイ から選択可能（ #30 ）
+- ダイナミックタブ非表示時はホームへ自動フォールバック、クラッシュなし
+- サブスレッドの画像コメントが欠落しないよう修正：新画像タイプ分岐を追加（ #27 ）
+- インライン予告行に「[画像]」プレースホルダを表示、コピー挙動も統一
+- サブスレッド画像は既存 PhotoView で拡大表示対応
+
+### 🇰🇷 한국어
+
+**시작 페이지 설정 + 하위 스레드 이미지 자리표시**
+
+- "시작 페이지" 설정 추가: 홈 / 동적 / 알림 / 나 중에서 선택 가능 ( #30 )
+- 동적 탭 숨김 시 홈으로 자동 폴백, 크래시 없음
+- 하위 스레드 이미지 댓글 유실 수정: 새 이미지 타입 분기 추가 ( #27 )
+- 인라인 미리보기에 "[이미지]" 자리표시 표시, 복사 동작 통일
+- 하위 스레드 이미지는 기존 PhotoView 로 확대 보기 지원
+
+---
+
 ## v4.0.0-ai.43 (2026-09-05) 💬 楼层回复定位修正 + 回帖页状态栏避让
 
 ### 🇨🇳 中文
