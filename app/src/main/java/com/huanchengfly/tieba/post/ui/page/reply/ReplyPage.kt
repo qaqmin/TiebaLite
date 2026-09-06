@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
@@ -431,10 +432,12 @@ internal fun ReplyPageContent(
     val parentModifier = if (curKeyboardType == NONE && !closingPanel) {
         Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .navigationBarsPadding()
     } else {
         Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .navigationBarsPadding()
             .consumeWindowInsets(WindowInsets.ime)
     }
