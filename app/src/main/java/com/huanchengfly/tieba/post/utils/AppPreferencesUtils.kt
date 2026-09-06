@@ -102,6 +102,11 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
         defaultValue = "0"
     )
 
+    var startupPage by DataStoreDelegates.string(
+        key = "startup_page",
+        defaultValue = "home"
+    )
+
     var darkTheme by DataStoreDelegates.string(key = "dark_theme", defaultValue = "grey_dark")
 
     var doNotUsePhotoPicker by DataStoreDelegates.boolean(defaultValue = false)

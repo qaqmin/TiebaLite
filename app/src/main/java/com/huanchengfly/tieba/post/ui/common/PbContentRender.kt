@@ -149,6 +149,10 @@ data class PicContentRender(
     override fun toString(): String {
         return "[图片]"
     }
+
+    override fun toAnnotationString(): AnnotatedString {
+        return AnnotatedString("[图片]")
+    }
 }
 
 @Stable
