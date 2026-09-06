@@ -5,6 +5,46 @@
 
 ---
 
+## v4.0.0-ai.43 (2026-09-05) 💬 楼层回复定位修正 + 回帖页状态栏避让
+
+### 🇨🇳 中文
+
+**「无法成为第一个楼中楼」根治 + 回帖页顶栏避让**
+
+- 修复楼层回复定位参数丢失：点击楼层「评论」或长按「回复」发出的内容，现在正确出现在该楼层的楼中楼中，不再误发为主贴新楼层（#26）
+- 楼中楼内回复同步补齐定位参数，回复对象绑定更精准
+- 修复回帖编辑页标题与系统状态栏重叠：顶部避让补齐，深浅色主题均正常（#29）
+- 回复主贴路径保持原有语义，三条回复链路互不影响；全链路真机回归零崩溃
+
+### 🇬🇧 English
+
+**Floor-reply targeting fix + reply page status bar inset**
+
+- Fixed missing floor-targeting parameter: tapping "Comment" on a floor or long-press "Reply" now posts into that floor's sub-thread instead of the main thread ( #26 )
+- Sub-thread replies now carry the full targeting parameter for precise binding
+- Fixed the reply editor's title overlapping the system status bar: top inset avoidance added, verified in both light & dark themes ( #29 )
+- Main-thread reply semantics preserved; all three reply paths verified on real devices with zero crashes
+
+### 🇯🇵 日本語
+
+**階層返信のターゲット修正 + 返信ページのステータスバー回避**
+
+- 階層の「コメント」や長押し「返信」が、メインスレッドではなく該当階層のサブスレッドに正しく投稿されるよう修正（ #26 ）
+- サブスレッド内返信にもターゲットパラメータを補完し、返信対象を正確にバインド
+- 返信エディタのタイトルとステータスバーの重なりを修正：上部インセット回避を追加、ライト/ダーク両テーマで確認（ #29 ）
+- メインスレッド返信のセマンティクスは維持、3つの返信パスを実機回帰、クラッシュゼロ
+
+### 🇰🇷 한국어
+
+**층 replies 대상 수정 + 답글 페이지 상태바 회피**
+
+- 층의 "댓글" 또는 길게 눌러 "답글"을 달 때 메인 스레드가 아닌 해당 층의 하위 스레드에 올바르게 게시되도록 수정 ( #26 )
+- 하위 스레드 내 답글에도 대상 파라미터를 보완하여 정확한 바인딩
+- 답글 편집기 제목과 상태바 겹침 수정: 상단 인셋 회피 추가, 라이트/다크 테마 모두 확인 ( #29 )
+- 메인 스레드 답글 의미 유지, 3개 답글 경로 실기기 회귀, 크래시 제로
+
+---
+
 ## v4.0.0-ai.42 (2026-09-02) 👍 点赞列表完整渲染
 
 ### 🇨🇳 中文
