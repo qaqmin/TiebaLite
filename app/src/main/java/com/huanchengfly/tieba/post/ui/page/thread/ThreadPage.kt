@@ -937,11 +937,11 @@ fun ThreadPage(
                     )
                 )
             },
-            onReplyClick = {
-                navigator.navigate("reply/$threadId")
+            onReplyClick = { post ->
+                navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${forum?.get { name }.orEmpty()}&postId=${post.id}")
             },
             onSubPostReplyClick = { post, subPost ->
-                navigator.navigate("reply/$threadId?subPostId=${subPost.id}")
+                navigator.navigate("reply/$threadId?postId=${post.id}&subPostId=${subPost.id}")
             },
             onOpenSubPosts = {
                 if (curForumId != null) {
