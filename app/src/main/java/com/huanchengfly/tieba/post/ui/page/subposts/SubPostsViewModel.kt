@@ -12,6 +12,7 @@ import com.huanchengfly.tieba.post.api.models.protos.SubPostList
 import com.huanchengfly.tieba.post.api.models.protos.ThreadInfo
 import com.huanchengfly.tieba.post.api.models.protos.User
 import com.huanchengfly.tieba.post.api.models.protos.contentRenders
+import com.huanchengfly.tieba.post.api.models.protos.contentRendersWithPhotoView
 import com.huanchengfly.tieba.post.api.models.protos.pbFloor.PbFloorResponse
 import com.huanchengfly.tieba.post.api.models.protos.renders
 import com.huanchengfly.tieba.post.api.models.protos.updateAgreeStatus
@@ -86,7 +87,7 @@ class SubPostsViewModel @Inject constructor() :
                     val subPosts = response.data_?.subpost_list.orEmpty().map {
                         SubPostItemData(
                             it.wrapImmutable(),
-                            it.content.renders.toImmutableList(),
+                            it.contentRendersWithPhotoView(post),
                         )
                     }.toImmutableList()
                     SubPostsPartialChange.Load.Success(
@@ -110,11 +111,12 @@ class SubPostsViewModel @Inject constructor() :
                 .pbFloorFlow(threadId, postId, forumId, page, subPostId)
                 .retry(2) { delay(1000); true }
                 .map<PbFloorResponse, SubPostsPartialChange.LoadMore> { response ->
+                    val post = response.data_?.post ?: error("数据异常: post")
                     val page = response.data_?.page ?: error("数据异常: page")
                     val subPosts = response.data_?.subpost_list.orEmpty().map {
                         SubPostItemData(
                             it.wrapImmutable(),
-                            it.content.renders.toImmutableList(),
+                            it.contentRendersWithPhotoView(post),
                         )
                     }.toImmutableList()
                     SubPostsPartialChange.LoadMore.Success(

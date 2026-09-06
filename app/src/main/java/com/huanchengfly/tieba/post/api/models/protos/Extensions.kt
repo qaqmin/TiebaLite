@@ -350,6 +350,23 @@ val List<PbContent>.renders: ImmutableList<PbContentRender>
                         )
                     )
                 }
+
+                30 -> {
+                    val parts = it.bsize.split(",")
+                    val width = parts.getOrNull(0)?.toIntOrNull() ?: it.width.toInt()
+                    val height = parts.getOrNull(1)?.toIntOrNull() ?: it.height.toInt()
+                    renders.add(
+                        PicContentRender(
+                            picUrl = it.picUrl,
+                            originUrl = it.originSrc,
+                            showOriginBtn = it.showOriginalBtn == 1,
+                            originSize = it.originSize,
+                            picId = ImageUtil.getPicId(it.originSrc),
+                            width = width,
+                            height = height
+                        )
+                    )
+                }
             }
         }
 
@@ -385,6 +402,22 @@ val Post.subPostContents: ImmutableList<AnnotatedString>
     get() = sub_post_list?.sub_post_list?.map { it.getContentText(origin_thread_info?.author?.id) }
         ?.toImmutableList()
         ?: persistentListOf()
+
+fun SubPostList.contentRendersWithPhotoView(post: Post): ImmutableList<PbContentRender> =
+    content.renders.map { render ->
+        if (render is PicContentRender) {
+            render.copy(
+                photoViewData = getPhotoViewData(
+                    post,
+                    render.picId,
+                    render.picUrl,
+                    render.originUrl,
+                    render.showOriginBtn,
+                    render.originSize
+                )
+            )
+        } else render
+    }.toImmutableList()
 
 val Post.subPosts: ImmutableList<SubPostItemData>
     get() = sub_post_list?.sub_post_list?.map {
