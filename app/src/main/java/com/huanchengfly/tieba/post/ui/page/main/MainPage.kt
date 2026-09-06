@@ -116,12 +116,23 @@ fun MainPage(
         key = booleanPreferencesKey("hideExplore"),
         defaultValue = LocalContext.current.appPreferences.hideExplore
     )
+    // 启动页：按设置决定初始 tab（组合期同步读取，首帧即真值）
+    val initialPage by remember {
+        derivedStateOf {
+            when (LocalContext.current.appPreferences.startupPage) {
+                "explore" -> if (!hideExplore) 1 else 0
+                "notification" -> if (hideExplore) 1 else 2
+                "user" -> if (hideExplore) 2 else 3
+                else -> 0
+            }
+        }
+    }
     val pageCount by remember {
         derivedStateOf {
             if (hideExplore) 3 else 4
         }
     }
-    val pagerState = rememberPagerState { pageCount }
+    val pagerState = rememberPagerState(initialPage = initialPage.coerceAtMost(pageCount - 1)) { pageCount }
     LaunchedEffect(hideExplore) {
         if (pagerState.currentPage == 3 && hideExplore) {
             pagerState.scrollToPage(2)

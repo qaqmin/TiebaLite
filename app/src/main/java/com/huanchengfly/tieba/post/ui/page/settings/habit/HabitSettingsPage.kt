@@ -133,6 +133,29 @@ fun HabitSettingsPage(
             }
             prefsItem {
                 ListPref(
+                    key = "startup_page",
+                    title = stringResource(id = R.string.settings_startup_page),
+                    entries = mapOf(
+                        "home" to stringResource(id = R.string.title_main),
+                        "explore" to stringResource(id = R.string.title_explore),
+                        "notification" to stringResource(id = R.string.title_notifications),
+                        "user" to stringResource(id = R.string.title_user)
+                    ),
+                    useSelectedAsSummary = true,
+                    defaultValue = "home",
+                    leadingIcon = {
+                        LeadingIcon {
+                            AvatarIcon(
+                                icon = Icons.Outlined.Home,
+                                size = Sizes.Small,
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                )
+            }
+            prefsItem {
+                ListPref(
                     key = "default_sort_type",
                     title = stringResource(id = R.string.title_settings_default_sort_type),
                     entries = mapOf(
