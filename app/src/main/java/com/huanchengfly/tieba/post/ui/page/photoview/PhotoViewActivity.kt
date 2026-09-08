@@ -48,6 +48,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.github.panpf.sketch.compose.rememberAsyncImageState
 import com.github.panpf.sketch.request.LoadState
 import com.github.panpf.zoomimage.SketchZoomAsyncImage
@@ -328,7 +331,28 @@ class PhotoViewActivity : BaseComposeActivityWithParcelable<PhotoViewData>() {
     }
 
     override fun onCreateContent(systemUiController: SystemUiController) {
+        // 瞬时隐藏（BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE）让系统栏走系统淡出过渡，避免显隐瞬间跳变
+        systemUiController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         systemUiController.isSystemBarsVisible = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 退出本页时恢复系统栏，配合返回过渡淡入，避免回到上一页时状态栏瞬间闪现
+        runCatching {
+            WindowCompat.getInsetsController(window, window.decorView)
+                .show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 分享面板等场景暂停后返回本页时重新进入沉浸态（finish 路径不会触发 onResume）
+        runCatching {
+            WindowCompat.getInsetsController(window, window.decorView)
+                .hide(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
