@@ -346,6 +346,15 @@ class PhotoViewActivity : BaseComposeActivityWithParcelable<PhotoViewData>() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 分享面板等场景暂停后返回本页时重新进入沉浸态（finish 路径不会触发 onResume）
+        runCatching {
+            WindowCompat.getInsetsController(window, window.decorView)
+                .hide(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         return try {
             super.dispatchTouchEvent(ev)
