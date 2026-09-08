@@ -5,6 +5,42 @@
 
 ---
 
+## v4.0.0-ai.46 (2026-09-08) 🖼️ 图片查看沉浸过渡 + 列表滚动位置记忆
+
+### 🇨🇳 中文
+
+**图片查看沉浸过渡 + 列表滚动位置记忆**
+
+- 修复图片查看页进入/退出时状态栏瞬间消失导致的画面跳变：改用系统过渡模式平滑淡入淡出，从分享面板返回时也会正确恢复沉浸态（#34）
+- 新增列表滚动位置记忆：楼中楼列表与主贴楼层列表在跳转个人主页后返回，自动停留在离开前的浏览位置，不再回到顶部（#8）
+- 回复定位、续读定位链路经真机回归确认不受影响
+
+### 🇬🇧 English
+
+**Immersive transition for photo viewer + list scroll position memory**
+
+- Fixed the jarring jump when opening/leaving the photo viewer: status bar now fades smoothly via system transient mode, and immersive state is correctly restored when returning from the share sheet ( #34 )
+- Added scroll position memory: sub-thread lists and main-thread floor lists now restore the browsing position after navigating to a user profile, instead of jumping back to the top ( #8 )
+- Reply targeting and resume-reading chains verified unaffected on real devices
+
+### 🇯🇵 日本語
+
+**写真ビューアの没入トランジション + リストスクロール位置の記憶**
+
+- 写真ビューア開閉時のステータスバー瞬間切替によるジャンプを修正：システム過渡モードで滑らかにフェード、共有シートから戻っても没入状態を正しく復元（ #34 ）
+- スクロール位置の記憶を追加：サブスレッド/メインスレッドのリストは、ユーザーページへ移動して戻った後も閲覧位置を維持（ #8 ）
+- 返信定位・続き読みチェーンは実機回帰で影響なしを確認
+
+### 🇰🇷 한국어
+
+**사진 뷰어 몰입 전환 + 리스트 스크롤 위치 기억**
+
+- 사진 뷰어 열기/닫기 시 상태바 순간 전환으로 인한 점프 수정: 시스템 과도 모드로 부드러운 페이드, 공유 시트에서 돌아와도 몰입 상태 복원 ( #34 )
+- 스크롤 위치 기억 추가: 하위 스레드/메인 스레드 리스트는 사용자 페이지 이동 후 돌아와도 열람 위치 유지 ( #8 )
+- 답글定位·이어읽기 체인은 실기기 회귀에서 영향 없음 확인
+
+---
+
 ## v4.0.0-ai.45 (2026-09-08) 🎯 楼中楼回复绑定修正 + 吧名路由加固
 
 ### 🇨🇳 中文
