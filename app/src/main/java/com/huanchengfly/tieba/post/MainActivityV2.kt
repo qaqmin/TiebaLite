@@ -728,7 +728,8 @@ class MainActivityV2 : BaseComposeActivity() {
                                 val forumId = backStackEntry.arguments?.getLong(Routes.Args.FORUM_ID) ?: 0L
                                 val forumName = backStackEntry.arguments?.getString(Routes.Args.FORUM_NAME) ?: ""
                                 val postId = backStackEntry.arguments?.getLong(Routes.Args.POST_ID) ?: 0L
-                                ReplyPage(threadId = threadId, forumId = forumId, forumName = forumName, postId = postId, navigator = navController)
+                                val subPostId = backStackEntry.arguments?.getLong(Routes.Args.SUB_POST_ID) ?: 0L
+                                ReplyPage(threadId = threadId, forumId = forumId, forumName = forumName, postId = postId, subPostId = subPostId, navigator = navController)
                             }
 
                             // === 设置页 ===

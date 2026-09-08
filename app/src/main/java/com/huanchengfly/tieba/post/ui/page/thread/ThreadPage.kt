@@ -938,7 +938,7 @@ fun ThreadPage(
                 )
             },
             onReplyClick = { post ->
-                navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${forum?.get { name }.orEmpty()}&postId=${post.id}")
+                navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${Uri.encode(forum?.get { name }.orEmpty())}&postId=${post.id}")
             },
             onSubPostReplyClick = { post, subPost ->
                 navigator.navigate("reply/$threadId?postId=${post.id}&subPostId=${subPost.id}")
@@ -1085,7 +1085,7 @@ fun ThreadPage(
                     BottomBar(
                         user = user,
                         onClickReply = {
-                            navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${forum?.get { name }.orEmpty()}")
+                            navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${Uri.encode(forum?.get { name }.orEmpty())}")
                         },
                         onAgree = {
                             val firstPostId =
@@ -1304,7 +1304,7 @@ fun ThreadPage(
                                                         navigator.navigate("user/${it.id}")
                                                     },
                                                     onReplyClick = {
-                                                        navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${forum?.get { name }.orEmpty()}")
+                                                        navigator.navigate("reply/$threadId?forumId=${curForumId ?: 0}&forumName=${Uri.encode(forum?.get { name }.orEmpty())}")
                                                     },
                                                     onMenuCopyClick = {
                                                         navigator.navigate("copy_dialog/${Uri.encode(it)}")
