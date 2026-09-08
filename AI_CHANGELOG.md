@@ -5,6 +5,38 @@
 
 ---
 
+## v4.0.0-ai.45 (2026-09-08) 🎯 楼中楼回复绑定修正 + 吧名路由加固
+
+### 🇨🇳 中文
+
+**回复对象精准锁定 + 特殊吧名路由加固**
+
+- 修复楼中楼回复降级：回帖页路由此前丢弃 subPostId，回复楼中楼内评论时对象会降级到楼层级——现已补齐参数消费，回复精确绑定目标评论（PR#33 后续加固）
+- 三处回复导航的吧名参数补 `Uri.encode`：吧名含 `&`/`#`/空格等特殊字符时路由不再被破坏（与 ai.39 编码规范对齐）
+
+### 🇬🇧 English
+
+**Precise reply targeting + special-forum-name route hardening**
+
+- Fixed sub-thread reply degradation: the reply route previously dropped subPostId, causing replies to a sub-thread comment to fall back to floor level — parameter consumption now completed for precise binding (PR#33 follow-up)
+- Added `Uri.encode` to forum-name parameters in three reply navigation calls: routes survive forum names containing `&`/`#`/spaces (aligned with the ai.39 encoding spec)
+
+### 🇯🇵 日本語
+
+**返信ターゲットの精密化 + 特殊吧名ルートの強化**
+
+- サブスレッド返信のターゲット降級を修正：ルートが subPostId を破棄し、返信がフロアレベルに落ちる問題を解消、パラメータ消費を補完（PR#33 続き）
+- 3 箇所の返信ナビゲーションで吧名パラメータに `Uri.encode` を追加：`&`/`#`/空白を含む吧名でもルートが壊れない（ai.39 仕様に準拠）
+
+### 🇰🇷 한국어
+
+**답글 대상 정밀 고정 + 특수 바명 라우트 강화**
+
+- 하위 스레드 답글 대상 강등 수정: 라우트가 subPostId 를 버려 답글이 층 레벨로 떨어지던 문제 해소, 파라미터 소비 보완 (PR#33 후속)
+- 3 곳의 답글 내비게이션에 바명 파라미터 `Uri.encode` 추가: `&`/`#`/공백 포함 바명도 라우트 손상 없음 (ai.39 규격 준수)
+
+---
+
 ## v4.0.0-ai.44 (2026-09-07) 🚀 启动页自定义 + 楼中楼图片占位
 
 ### 🇨🇳 中文
