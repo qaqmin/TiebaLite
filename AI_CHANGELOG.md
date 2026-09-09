@@ -5,6 +5,42 @@
 
 ---
 
+## v4.0.0-ai.47 (2026-09-09) 📱 主页面底栏导航条适配
+
+### 🇨🇳 中文
+
+**主页面底部导航栏适配系统导航条**
+
+- 修复主页面底栏与系统导航条重叠：底栏背景色延伸到底部安全区，暗黑模式下不再出现透明断层
+- 补齐手势热区确定性兜底：手势导航且系统未上报导航条高度时，以 28dp 兜底保证底栏不贴底（与帖子页行为一致）（#36）
+- 三键导航设备无视觉变化；四 tab 切换、启动页设置、动态入口隐藏联动均不受影响
+
+### 🇬🇧 English
+
+**Main page bottom bar navigation bar adaptation**
+
+- Fixed the main page bottom bar overlapping the system navigation bar: bar background now extends into the bottom safe area, no more transparent gap in dark mode
+- Added deterministic gesture-area fallback: 28dp when gesture navigation reports no navigation bar height, consistent with the thread page ( #36 )
+- No visual change on 3-button devices; tab switching / startup page / hide-explore unaffected
+
+### 🇯🇵 日本語
+
+**メインページのボトムバーとナビゲーションバーの適合**
+
+- メインページのボトムバーがシステムナビゲーションバーと重なる問題を修正：バー背景を下部セーフエリアまで延伸、ダークモードの透明な断層を解消
+- ジェスチャーエリアの決定論的フォールバックを追加：28dp で底バーが貼り付かないように保証（スレッドページと一致）（ #36 ）
+- 3 ボタンデバイスで視覚変化なし；タブ切替・起動ページ・動的非表示に影響なし
+
+### 🇰🇷 한국어
+
+**메인 페이지 하단 바 내비게이션 바 적응**
+
+- 메인 페이지 하단 바가 시스템 내비게이션 바와 겹치는 문제 수정: 바 배경이 하단 세이프 에어리어까지 확장, 다크 모드 투명 단절 해소
+- 제스처 영역 결정론적 폴백 추가: 28dp 로 하단 바가 바닥에 붙지 않도록 보장 (스레드 페이지와 일치) ( #36 )
+- 3버튼 기기 시각 변화 없음; 탭 전환·시작 페이지·동적 숨김 영향 없음
+
+---
+
 ## v4.0.0-ai.46 (2026-09-08) 🖼️ 图片查看沉浸过渡 + 列表滚动位置记忆
 
 ### 🇨🇳 中文
