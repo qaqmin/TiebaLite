@@ -350,23 +350,6 @@ val List<PbContent>.renders: ImmutableList<PbContentRender>
                         )
                     )
                 }
-
-                30 -> {
-                    val parts = it.bsize.split(",")
-                    val width = parts.getOrNull(0)?.toIntOrNull() ?: it.width.toInt()
-                    val height = parts.getOrNull(1)?.toIntOrNull() ?: it.height.toInt()
-                    renders.add(
-                        PicContentRender(
-                            picUrl = it.picUrl,
-                            originUrl = it.originSrc,
-                            showOriginBtn = it.showOriginalBtn == 1,
-                            originSize = it.originSize,
-                            picId = ImageUtil.getPicId(it.originSrc),
-                            width = width,
-                            height = height
-                        )
-                    )
-                }
             }
         }
 
