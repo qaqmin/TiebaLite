@@ -1292,7 +1292,7 @@ object MixedTiebaApiImpl : ITiebaApi {
             buildProtobufRequestBody(
                 PbFloorRequest(
                     PbFloorRequestData(
-                        common = buildCommonRequest(clientVersion = ClientVersion.TIEBA_V12),
+                        common = buildCommonRequest(clientVersion = ClientVersion.TIEBA_V22),
                         forum_id = forumId,
                         kz = threadId,
                         pid = postId,
@@ -1305,7 +1305,7 @@ object MixedTiebaApiImpl : ITiebaApi {
                         ori_ugc_type = 0
                     )
                 ),
-                clientVersion = ClientVersion.TIEBA_V12,
+                clientVersion = ClientVersion.TIEBA_V22,
                 needSToken = false
             )
         )

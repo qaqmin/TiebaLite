@@ -1,5 +1,6 @@
 package com.huanchengfly.tieba.post.api.models.protos
 
+import android.util.Log
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -351,21 +352,8 @@ val List<PbContent>.renders: ImmutableList<PbContentRender>
                     )
                 }
 
-                30 -> {
-                    val parts = it.bsize.split(",")
-                    val width = parts.getOrNull(0)?.toIntOrNull() ?: it.width.toInt()
-                    val height = parts.getOrNull(1)?.toIntOrNull() ?: it.height.toInt()
-                    renders.add(
-                        PicContentRender(
-                            picUrl = it.picUrl,
-                            originUrl = it.originSrc,
-                            showOriginBtn = it.showOriginalBtn == 1,
-                            originSize = it.originSize,
-                            picId = ImageUtil.getPicId(it.originSrc),
-                            width = width,
-                            height = height
-                        )
-                    )
+                else -> {
+                    Log.i("PbContentRender", "unknown type: ${it.type}")
                 }
             }
         }
