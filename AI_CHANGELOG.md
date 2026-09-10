@@ -5,6 +5,46 @@
 
 ---
 
+## v4.0.0-ai.48 (2026-09-10) 🖼️ 楼中楼带图评论完整渲染
+
+### 🇨🇳 中文
+
+**楼中楼带图评论真图渲染（接口版本号升级）**
+
+- 修复楼中楼带图评论显示为「[图片]」占位的问题：楼中楼详情接口客户端版本号升级至 22.10.1.0，服务端现直接下发完整图片数据（#27）
+- 图片支持点击查看大图，宽高缺失时按内容自带尺寸兜底
+- 未知内容类型不再静默丢弃：新增日志兜底，官方后续调整数据格式时可观测
+- 楼中楼文字/表情/引用渲染经真机回归确认无变化
+
+### 🇬🇧 English
+
+**Full image rendering for sub-thread comments (API version bump)**
+
+- Fixed sub-thread image comments showing "[Image]" placeholder: the sub-thread detail API client version is bumped to 22.10.1.0, and the server now delivers full image data ( #27 )
+- Images support tap-to-view; missing dimensions fall back to content-intrinsic size
+- Unknown content types are no longer silently dropped: a log fallback is added for observability when upstream changes data formats
+- Text/emote/quote rendering in sub-threads verified unchanged on real devices
+
+### 🇯🇵 日本語
+
+**サブスレッド画像コメントの完全レンダリング（APIバージョン更新）**
+
+- サブスレッドの画像コメントが「[画像]」プレースホルダで表示される問題を修正：詳細 API のクライアントバージョンを 22.10.1.0 に更新し、サーバーが完全な画像データを配信（ #27 ）
+- 画像はタップで拡大表示、サイズ欠損時はコンテンツ固有サイズにフォールバック
+- 未知のコンテンツタイプを黙って破棄しない：ログフォールバックを追加
+- サブスレッドのテキスト/絵文字/引用の描画は実機回帰で変化なし
+
+### 🇰🇷 한국어
+
+**하위 스레드 이미지 댓글 완전 렌더링 (API 버전 업그레이드)**
+
+- 하위 스레드 이미지 댓글이 "[이미지]" 자리표시로 보이던 문제 수정: 상세 API 클라이언트 버전을 22.10.1.0 으로 올려 서버가 완전한 이미지 데이터 전달 ( #27 )
+- 이미지 탭으로 확대 보기 지원, 치수 누락 시 콘텐츠 고유 치수로 폴백
+- 알 수 없는 콘텐츠 타입을 조용히 버리지 않음: 로그 폴백 추가
+- 하위 스레드 텍스트/이모티콘/인용 렌더링은 실기기 회귀에서 변화 없음
+
+---
+
 ## v4.0.0-ai.47 (2026-09-09) 📱 主页面底栏导航条适配
 
 ### 🇨🇳 中文
