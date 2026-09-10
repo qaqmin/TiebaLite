@@ -5,6 +5,42 @@
 
 ---
 
+## v4.0.0-ai.49 (2026-09-09) 🔥 热榜话题卡片可点击
+
+### 🇨🇳 中文
+
+**热榜话题卡片支持点击跳转搜索**
+
+- 修复热榜页话题榜卡片点击无响应：点击话题卡片现在跳转搜索页并自动搜索该话题关键词（#39）
+- 话题名经 URI 编码，含表情/特殊字符/逗号的话题均可正常跳转（真机实测中文+逗号+英文样本无损往返）
+- 搜索页新增可选 query 参数（默认空），既有裸导航与 deepLink 行为不变
+
+### 🇬🇧 English
+
+**Hot page topic cards now tappable**
+
+- Fixed unresponsive topic cards on the hot page: tapping a topic card now opens the search page and searches for that topic automatically ( #39 )
+- Topic names are URI-encoded — topics with emoji/special characters/commas all navigate correctly (verified with CJK+comma+Latin samples)
+- Search page gains an optional query argument (default empty); existing bare navigation and deepLink behavior unchanged
+
+### 🇯🇵 日本語
+
+**ホットページのトピックカードがタップ可能に**
+
+- ホットページのトピックカードが反応しない問題を修正：カードをタップすると検索ページが開き、トピック名で自動検索（ #39 ）
+- トピック名は URI エンコード済み——絵文字/特殊文字/カンマを含むトピックも正常に遷移（実機検証済み）
+- 検索ページにオプションの query 引数を追加（デフォルト空）；既存のナビゲーションと deepLink の動作は変更なし
+
+### 🇰🇷 한국어
+
+**핫 페이지 토픽 카드 클릭 지원**
+
+- 핫 페이지 토픽 카드가 반응하지 않던 문제 수정: 카드 탭 시 검색 페이지가 열리고 해당 토픽명으로 자동 검색 ( #39 )
+- 토픽명은 URI 인코딩 적용——이모지/특수문자/쉼표 포함 토픽도 정상 이동 (실기기 검증)
+- 검색 페이지에 선택적 query 인자 추가(기본값 빈 문자열); 기존 내비게이션과 deepLink 동작 변화 없음
+
+---
+
 ## v4.0.0-ai.48 (2026-09-10) 🖼️ 楼中楼带图评论完整渲染
 
 ### 🇨🇳 中文
