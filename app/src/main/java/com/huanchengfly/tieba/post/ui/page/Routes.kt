@@ -12,7 +12,7 @@ object Routes {
     const val FORUM = "forum/{forumName}"                        // deepLink: tblite://forum/{forumName}
     const val NOTIFICATIONS = "notifications/{initialTab}"       // deepLink: tblite://notifications/{initialTab}
     const val HISTORY = "history"                                // deepLink: tblite://history
-    const val SEARCH = "search"                                  // deepLink: tblite://search
+    const val SEARCH = "search?query={query}"                    // deepLink: tblite://search
     const val THREAD_STORE = "favorite"                          // deepLink: tblite://favorite (favorite线程)
 
     // 详情页

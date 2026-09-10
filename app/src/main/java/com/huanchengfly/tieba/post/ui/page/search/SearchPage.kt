@@ -113,6 +113,7 @@ data class SearchPageItem(
 @Composable
 fun SearchPage(
     navigator: NavHostController,
+    initialQuery: String = "",
     viewModel: SearchViewModel = pageViewModel<SearchUiIntent, SearchViewModel>(
         listOf(SearchUiIntent.Init)
     ),
@@ -141,6 +142,12 @@ fun SearchPage(
     }
 
     var inputKeyword by remember { mutableStateOf("") }
+
+    LaunchedEffect(initialQuery) {
+        if (initialQuery.isNotBlank()) {
+            viewModel.send(SearchUiIntent.SubmitKeyword(initialQuery))
+        }
+    }
 
     LaunchedEffect(Unit) {
         snapshotFlow { inputKeyword }

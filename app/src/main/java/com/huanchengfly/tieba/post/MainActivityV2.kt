@@ -620,8 +620,19 @@ class MainActivityV2 : BaseComposeActivity() {
 
                             composable(
                                 route = Routes.SEARCH,
+                                arguments = listOf(
+                                    navArgument("query") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                ),
                                 deepLinks = listOf(navDeepLink { uriPattern = "tblite://search" })
-                            ) { SearchPage(navigator = navController) }
+                            ) { backStackEntry ->
+                                SearchPage(
+                                    navigator = navController,
+                                    initialQuery = backStackEntry.arguments?.getString("query").orEmpty()
+                                )
+                            }
 
                             composable(
                                 route = Routes.THREAD_STORE,

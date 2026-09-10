@@ -1,6 +1,7 @@
 package com.huanchengfly.tieba.post.ui.page.main.explore.hot
 
 import android.graphics.Typeface
+import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -131,7 +132,14 @@ fun HotPage(navigator: NavHostController,
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.padding(vertical = 8.dp)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navigator.navigate(
+                                                "search?query=${Uri.encode(item.get { topicName })}"
+                                            )
+                                        }
+                                        .padding(vertical = 8.dp)
                                 ) {
                                     Text(
                                         text = "${index + 1}",
