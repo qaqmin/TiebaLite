@@ -1,5 +1,6 @@
 package com.huanchengfly.tieba.post.api.models.protos
 
+import android.util.Log
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -349,6 +350,10 @@ val List<PbContent>.renders: ImmutableList<PbContentRender>
                             height = height
                         )
                     )
+                }
+
+                else -> {
+                    Log.i("PbContentRender", "unknown type: ${it.type}")
                 }
             }
         }
