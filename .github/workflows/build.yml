@@ -117,18 +117,16 @@ jobs:
           echo "Deleting old release if exists..."
           gh release delete "$TAG" --yes 2>/dev/null || true
           echo "Creating release $TAG..."
+          CN_NOTES="$(python3 -c "import re; text=open('AI_CHANGELOG.md',encoding='utf-8').read(); m=re.search(r'^## '+re.escape('$TAG')+r'[^\n]*\n(.*?)(?=^## )',text,re.S|re.M); sec=m.group(1) if m else ''; m2=re.search(r'### 🇨🇳 中文\n(.*?)(?=^### |\Z)',sec,re.S|re.M); print(m2.group(1).strip() if m2 else '')" || true)"
           DESC="## $TAG
-          
-          ### ⚡ 全量一键签到 · 3000 吧全覆盖
-          智能分页引擎拉取所有关注的贴吧，通知栏实时显示进度。
-          
-          > 🔋 **首次签到请关闭电池优化策略，避免后台被杀。**
-          
+
+          ${CN_NOTES}
+
           ---
           | APK | 适用场景 |
           |------|------|
-          | release | 正式使用（已混淆优化，## 10MB） |
-          | debug | 测试调试（保留完整日志）
+          | release | 正式使用（已混淆优化，约 10MB） |
+          | debug | 测试调试（保留完整日志） |
           "
           gh release create "$TAG" --title "$TAG" --notes "$DESC"
           echo "Uploading APKs..."
