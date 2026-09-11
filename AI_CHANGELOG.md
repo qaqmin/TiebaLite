@@ -5,6 +5,42 @@
 
 ---
 
+## v4.0.0-ai.50 (2026-09-11) 🔥 话题榜完整列表页可点击
+
+### 🇨🇳 中文
+
+**话题榜完整列表页支持点击跳转搜索**
+
+- 补齐热榜话题榜第二条入口：「更多话题」进入的话题榜完整列表页条目现可点击跳转搜索（#39）
+- 与页内话题卡片一致的过渡方案：跳转搜索页并自动搜索话题关键词，URI 编码保证特殊字符无损
+- 热榜话题榜全链路可点：页内卡片 / 完整列表页全覆盖，无剩余死区
+
+### 🇬🇧 English
+
+**Full topic list page now tappable**
+
+- Completed the second topic-rank entry: items in the full topic list page (via "More topics") now open the search page with the topic pre-filled ( #39 )
+- Same transitional approach as inline cards; topic names are URI-encoded so special characters survive intact
+- The whole topic-rank surface is now tappable — inline cards and the full list page, no dead zones left
+
+### 🇯🇵 日本語
+
+**トピックランキング完全リストページがタップ可能に**
+
+- 「もっと話題」から入る完全リストページの項目がクリック可能に——検索ページへ遷移し自動検索（ #39 ）
+- インラインカードと同一の暫定方式：URI エンコード済みで特殊文字も無損
+- トピックランキングの全導線がクリック可能に——デッドゾーンなし
+
+### 🇰🇷 한국어
+
+**토픽 랭킹 전체 목록 페이지 클릭 지원**
+
+- 「더 많은 토픽」으로 진입하는 전체 목록 페이지 항목이 클릭 가능——검색 페이지로 이동해 자동 검색 ( #39 )
+- 인라인 카드와 동일한 과도 방식: URI 인코딩 적용, 특수문자 무손실
+- 토픽 랭킹의 모든 경로가 클릭 가능——남은 죽은 구역 없음
+
+---
+
 ## v4.0.0-ai.49 (2026-09-09) 🔥 热榜话题卡片可点击
 
 ### 🇨🇳 中文
