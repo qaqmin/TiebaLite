@@ -77,6 +77,7 @@ import com.huanchengfly.tieba.post.api.retrofit.exception.getErrorMessage
 import com.huanchengfly.tieba.post.arch.BaseComposeActivity
 import com.huanchengfly.tieba.post.arch.GlobalEvent
 import com.huanchengfly.tieba.post.arch.emitGlobalEvent
+import com.huanchengfly.tieba.post.arch.hiltViewModel
 import com.huanchengfly.tieba.post.arch.onGlobalEvent
 import com.huanchengfly.tieba.post.components.ClipBoardForumLink
 import com.huanchengfly.tieba.post.components.ClipBoardLink
@@ -104,6 +105,9 @@ import com.huanchengfly.tieba.post.ui.page.settings.SettingsPage
 import com.huanchengfly.tieba.post.ui.page.settings.about.AboutPage
 import com.huanchengfly.tieba.post.ui.page.settings.about.DraftPage
 import com.huanchengfly.tieba.post.ui.page.settings.about.LogPage
+import com.huanchengfly.tieba.post.update.UpdateDialog
+import com.huanchengfly.tieba.post.update.UpdateSource
+import com.huanchengfly.tieba.post.update.UpdateViewModel
 import com.huanchengfly.tieba.post.ui.page.settings.account.AccountManagePage
 import com.huanchengfly.tieba.post.ui.page.settings.block.BlockSettingsPage
 import com.huanchengfly.tieba.post.ui.page.settings.block.blocklist.BlockListPage
@@ -456,6 +460,13 @@ class MainActivityV2 : BaseComposeActivity() {
     override fun Content() {
         val okSignAlertDialogState = rememberDialogState()
         ClipBoardDetectDialog()
+        // 应用内更新：启动检查（节流，失败静默，命中则弹窗）——与 About 页共用同一 UpdateViewModel
+        val updateViewModel: UpdateViewModel = hiltViewModel()
+        val updateState by updateViewModel.state.collectAsState()
+        UpdateDialog(state = updateState, viewModel = updateViewModel)
+        LaunchedEffect(Unit) {
+            updateViewModel.startupCheck()
+        }
         AlertDialog(
             dialogState = okSignAlertDialogState,
             title = { Text(text = stringResource(id = R.string.title_dialog_oksign_battery_optimization)) },

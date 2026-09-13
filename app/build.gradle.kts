@@ -78,6 +78,11 @@ android {
         buildConfig = true
     }
 
+    // 本地 JVM 单元测试：org.json 等 android.jar stub 默认抛异常，放行返回默认值
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     defaultConfig {
         buildConfigField("String", "SIGN_MAINTAINER", "\"min09577\"")
         buildConfigField("String", "SIGN_REPO", "\"https://github.com/min09577/TiebaLite\"")
@@ -101,6 +106,12 @@ android {
             isDebuggable = false
             isJniDebuggable = false
             multiDexEnabled = true
+            // 应用内更新 mock 源：release 恒为空（mock 地址绝不进 release 路径）
+            buildConfigField("String", "MOCK_UPDATE_API_ROOT", "\"\"")
+        }
+        debug {
+            // 本地端到端验收用：adb reverse 后指向 python -m http.server 的 mock 源
+            buildConfigField("String", "MOCK_UPDATE_API_ROOT", "\"http://localhost:8000/\"")
         }
     }
     compileOptions {

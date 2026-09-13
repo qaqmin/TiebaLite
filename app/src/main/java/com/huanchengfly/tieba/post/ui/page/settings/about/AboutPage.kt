@@ -53,34 +53,18 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.huanchengfly.tieba.post.BuildConfig
 import com.huanchengfly.tieba.post.R
+import com.huanchengfly.tieba.post.arch.hiltViewModel
 import com.huanchengfly.tieba.post.toastShort
 import com.huanchengfly.tieba.post.ui.common.theme.compose.ExtendedTheme
 import com.huanchengfly.tieba.post.ui.widgets.compose.BackNavigationIcon
 import com.huanchengfly.tieba.post.ui.widgets.compose.MyScaffold
 import com.huanchengfly.tieba.post.ui.widgets.compose.TitleCentredToolbar
+import com.huanchengfly.tieba.post.update.UpdateDownloadProgress
+import com.huanchengfly.tieba.post.update.UpdateSource
+import com.huanchengfly.tieba.post.update.UpdateUiState
+import com.huanchengfly.tieba.post.update.UpdateViewModel
 import com.huanchengfly.tieba.post.utils.appPreferences
-import com.huanchengfly.tieba.post.utils.launchUrl
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
-import org.json.JSONObject
-
-data class GithubRelease(
-    val tagName: String = "",
-    val htmlUrl: String = "",
-    val name: String = "",
-    val downloadUrl: String = "",
-)
-
-sealed class UpdateState {
-    data object Idle : UpdateState()
-    data object Checking : UpdateState()
-    data class Found(val release: GithubRelease) : UpdateState()
-    data object UpToDate : UpdateState()
-    data class Error(val message: String) : UpdateState()
-}
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AboutPage(
@@ -88,57 +72,11 @@ fun AboutPage(
 ) {
     var lastClickTime by remember { mutableLongStateOf(0L) }
     var clickCount by remember { mutableIntStateOf(0) }
-    var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
-    val scope = rememberCoroutineScope()
+    // 与启动路径共用同一更新模块（同一 ViewModel / 比对 / 元数据解析）
+    val updateViewModel: UpdateViewModel = hiltViewModel()
+    val updateState by updateViewModel.state.collectAsState()
     val context = LocalContext.current
     val currentVersion = BuildConfig.VERSION_NAME
-
-    fun checkUpdate() {
-        updateState = UpdateState.Checking
-        scope.launch {
-            updateState = try {
-                withContext(Dispatchers.IO) {
-                    val conn = URL("https://api.github.com/repos/min09577/TiebaLite/releases/latest")
-                        .openConnection() as HttpURLConnection
-                    conn.setRequestProperty("Accept", "application/vnd.github+json")
-                    conn.connectTimeout = 10000
-                    conn.readTimeout = 10000
-                    val text = conn.inputStream.bufferedReader().readText()
-                    val json = JSONObject(text)
-                    val tagName = json.optString("tag_name", "")
-                    val htmlUrl = json.optString("html_url", "")
-                    val name = json.optString("name", "")
-                    val assets = json.optJSONArray("assets")
-                    var downloadUrl = ""
-                    if (assets != null) {
-                        for (i in 0 until assets.length()) {
-                            val a = assets.optJSONObject(i)
-                            val fileName = a?.optString("name", "") ?: ""
-                            if (fileName.contains("release-")) {
-                                downloadUrl = a.optString("browser_download_url", "")
-                                break
-                            }
-                        }
-                    }
-                    val release = GithubRelease(
-                        tagName = tagName,
-                        htmlUrl = htmlUrl,
-                        name = name,
-                        downloadUrl = downloadUrl
-                    )
-                    val remoteTag = tagName.removePrefix("v").trim()
-                    val localTag = currentVersion.removePrefix("v").substringBefore("+").trim()
-                    if (remoteTag != localTag && remoteTag.isNotEmpty()) {
-                        UpdateState.Found(release)
-                    } else {
-                        UpdateState.UpToDate
-                    }
-                }
-            } catch (e: Exception) {
-                UpdateState.Error(e.message ?: "检查失败")
-            }
-        }
-    }
 
     MyScaffold(
         backgroundColor = Color.Transparent,
@@ -228,15 +166,15 @@ fun AboutPage(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     when (val state = updateState) {
-                        UpdateState.Idle -> {
+                        UpdateUiState.Idle -> {
                             Text(
-                                "检查是否有新版本",
+                                stringResource(id = R.string.text_update_check_idle),
                                 color = ExtendedTheme.colors.textSecondary,
                                 fontSize = 14.sp
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Button(
-                                onClick = { checkUpdate() },
+                                onClick = { updateViewModel.manualCheck() },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     backgroundColor = ExtendedTheme.colors.accent,
@@ -249,10 +187,10 @@ fun AboutPage(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("检查更新", fontWeight = FontWeight.Medium)
+                                Text(stringResource(id = R.string.text_update_check_now), fontWeight = FontWeight.Medium)
                             }
                         }
-                        UpdateState.Checking -> {
+                        is UpdateUiState.Checking -> {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(32.dp),
                                 strokeWidth = 3.dp,
@@ -260,12 +198,12 @@ fun AboutPage(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "正在检查...",
+                                stringResource(id = R.string.text_update_checking),
                                 color = ExtendedTheme.colors.textSecondary,
                                 fontSize = 14.sp
                             )
                         }
-                        is UpdateState.Found -> {
+                        is UpdateUiState.Available -> {
                             Icon(
                                 Icons.Rounded.SystemUpdate,
                                 contentDescription = null,
@@ -274,7 +212,7 @@ fun AboutPage(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "发现新版本",
+                                stringResource(id = R.string.title_update_available),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = ExtendedTheme.colors.accent
@@ -285,32 +223,33 @@ fun AboutPage(
                                 color = ExtendedTheme.colors.textSecondary,
                                 fontSize = 14.sp
                             )
+                            if (state.force) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    stringResource(id = R.string.text_update_force),
+                                    color = ExtendedTheme.colors.accent,
+                                    fontSize = 12.sp
+                                )
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Button(
-                                    onClick = {
-                                        try {
-                                            val url = state.release.downloadUrl.ifEmpty {
-                                                state.release.htmlUrl
-                                            }
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            context.toastShort("无法打开链接")
-                                        }
-                                    },
+                                    onClick = { updateViewModel.download() },
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         backgroundColor = ExtendedTheme.colors.accent,
                                         contentColor = Color.White
                                     )
                                 ) {
-                                    Text("下载更新", fontWeight = FontWeight.Medium)
+                                    Text(stringResource(id = R.string.button_update_now), fontWeight = FontWeight.Medium)
                                 }
                                 OutlinedButton(
                                     onClick = {
                                         try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(state.release.htmlUrl))
+                                            val url = state.release.htmlUrl.ifEmpty {
+                                                "https://github.com/min09577/TiebaLite/releases"
+                                            }
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                             context.startActivity(intent)
                                         } catch (e: Exception) {
                                             context.toastShort("无法打开链接")
@@ -328,7 +267,14 @@ fun AboutPage(
                                 }
                             }
                         }
-                        UpdateState.UpToDate -> {
+                        is UpdateUiState.Downloading -> {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            UpdateDownloadProgress(
+                                downloaded = state.downloaded,
+                                total = state.total
+                            )
+                        }
+                        is UpdateUiState.ReadyToInstall -> {
                             Icon(
                                 Icons.Rounded.CheckCircle,
                                 contentDescription = null,
@@ -337,13 +283,63 @@ fun AboutPage(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "已是最新版本",
+                                stringResource(
+                                    id = if (state.verified) R.string.text_update_ready
+                                    else R.string.text_update_ready_unverified
+                                ),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = ExtendedTheme.colors.text
+                            )
+                            state.installError?.let { error ->
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    error,
+                                    color = ExtendedTheme.colors.accent,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = { updateViewModel.install() },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = ExtendedTheme.colors.accent,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(stringResource(id = R.string.button_update_install), fontWeight = FontWeight.Medium)
+                            }
+                        }
+                        is UpdateUiState.DownloadFailed -> {
+                            Text(
+                                stringResource(id = R.string.text_update_download_failed) + "：" + state.message,
+                                color = MaterialTheme.colors.error,
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(onClick = { updateViewModel.download() }) {
+                                Text(stringResource(id = R.string.button_update_retry))
+                            }
+                        }
+                        is UpdateUiState.UpToDate -> {
+                            Icon(
+                                Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                stringResource(id = R.string.text_update_up_to_date),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
                                 color = ExtendedTheme.colors.text
                             )
                         }
-                        is UpdateState.Error -> {
+                        is UpdateUiState.Failed -> {
                             Text(
                                 state.message,
                                 color = MaterialTheme.colors.error,
@@ -351,8 +347,8 @@ fun AboutPage(
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            TextButton(onClick = { checkUpdate() }) {
-                                Text("重试")
+                            TextButton(onClick = { updateViewModel.manualCheck() }) {
+                                Text(stringResource(id = R.string.button_update_retry))
                             }
                         }
                     }

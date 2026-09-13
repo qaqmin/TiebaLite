@@ -188,11 +188,15 @@ fun AlertDialog(
     title: @Composable (DialogScope.() -> Unit) = {},
     content: @Composable (DialogScope.() -> Unit) = {},
     buttons: @Composable (DialogScope.() -> Unit) = {},
+    cancelable: Boolean = true,
+    cancelableOnTouchOutside: Boolean = true,
 ) {
     Dialog(
         modifier = modifier,
         dialogState = dialogState,
         onDismiss = onDismiss,
+        cancelable = cancelable,
+        cancelableOnTouchOutside = cancelableOnTouchOutside,
         title = title,
         buttons = buttons,
     ) {

@@ -1,0 +1,272 @@
+package com.huanchengfly.tieba.post.update
+
+import android.content.Context
+import android.util.Log
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.huanchengfly.tieba.post.BuildConfig
+import com.huanchengfly.tieba.post.dataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * 更新检查来源。
+ */
+enum class UpdateSource {
+    /** 启动时自动检查（节流，失败静默，弹窗提示）。 */
+    STARTUP,
+
+    /** 关于页手动检查（不节流，失败可见）。 */
+    MANUAL
+}
+
+/**
+ * 更新流程状态（单一数据源，启动弹窗与关于页内联卡片共用）。
+ */
+sealed class UpdateUiState {
+    data object Idle : UpdateUiState()
+
+    data class Checking(val source: UpdateSource) : UpdateUiState()
+
+    data class Available(
+        val release: GitHubRelease,
+        val force: Boolean,
+        val source: UpdateSource
+    ) : UpdateUiState()
+
+    data class UpToDate(val source: UpdateSource) : UpdateUiState()
+
+    data class Failed(val message: String, val source: UpdateSource) : UpdateUiState()
+
+    data class Downloading(
+        val release: GitHubRelease,
+        val downloaded: Long,
+        val total: Long,
+        val source: UpdateSource
+    ) : UpdateUiState()
+
+    data class DownloadFailed(val release: GitHubRelease, val message: String, val source: UpdateSource) : UpdateUiState()
+
+    data class ReadyToInstall(
+        val release: GitHubRelease,
+        val file: File,
+        /** true = SHA256 与 release 资产 digest 比对通过；false = 远端未提供 digest，未校验。 */
+        val verified: Boolean,
+        val installError: String? = null,
+        val source: UpdateSource
+    ) : UpdateUiState()
+}
+
+/**
+ * 更新模块状态中枢（单例）：启动检查与关于页手动检查共用同一份
+ * 检查 / 比对 / 元数据解析 / 下载 / 安装逻辑。
+ */
+@Singleton
+class UpdateManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val checking = AtomicBoolean(false)
+    private val downloading = AtomicBoolean(false)
+
+    private val _state = MutableStateFlow<UpdateUiState>(UpdateUiState.Idle)
+    val state: StateFlow<UpdateUiState> = _state.asStateFlow()
+
+    /** debug 构建专用：本地 mock 的 API 根地址覆盖（由启动 intent extra 注入）。 */
+    private var mockApiRoot: String? = null
+
+    private fun apiRoot(): String {
+        if (BuildConfig.DEBUG) {
+            mockApiRoot?.takeIf { it.isNotBlank() }?.let { return it }
+            // debug 默认 mock 源（gradle buildConfigField，release 恒为空串）
+            if (BuildConfig.MOCK_UPDATE_API_ROOT.isNotBlank()) {
+                return BuildConfig.MOCK_UPDATE_API_ROOT
+            }
+        }
+        return UpdateDownloader.DEFAULT_API_ROOT
+    }
+
+    fun check(source: UpdateSource, mockRoot: String? = null) {
+        if (BuildConfig.DEBUG && !mockRoot.isNullOrBlank()) {
+            mockApiRoot = mockRoot
+        }
+        if (!checking.compareAndSet(false, true)) return
+        scope.launch {
+            try {
+                if (source == UpdateSource.STARTUP &&
+                    System.currentTimeMillis() - lastCheckTime() < CHECK_INTERVAL_MS
+                ) {
+                    return@launch
+                }
+                _state.value = UpdateUiState.Checking(source)
+                val root = apiRoot()
+                val release = if (VersionCompat.channelOf(BuildConfig.VERSION_NAME) == UpdateChannel.AI) {
+                    UpdateDownloader.fetchLatestAiRelease(root)
+                } else {
+                    UpdateDownloader.fetchStableRelease(root)
+                }
+                saveLastCheckTime()
+                if (release == null) {
+                    _state.value = when (source) {
+                        // 启动检查失败静默，不打扰
+                        UpdateSource.STARTUP -> UpdateUiState.Idle
+                        UpdateSource.MANUAL -> UpdateUiState.Failed("检查更新失败，请稍后重试", source)
+                    }
+                    return@launch
+                }
+                when (VersionCompat.compare(BuildConfig.VERSION_NAME, release.tagName)) {
+                    CompareResult.Newer -> {
+                        val force = isForceUpdate(release)
+                        if (source == UpdateSource.STARTUP && !force && isIgnored(release.tagName)) {
+                            // 用户已对本版本点过"本次忽略"：启动不再提示
+                            _state.value = UpdateUiState.Idle
+                        } else {
+                            _state.value = UpdateUiState.Available(release, force, source)
+                        }
+                    }
+                    CompareResult.Equal, CompareResult.Older ->
+                        _state.value = UpdateUiState.UpToDate(source)
+                    CompareResult.Incompatible -> {
+                        Log.w(TAG, "incompatible version tag: ${release.tagName}")
+                        _state.value = when (source) {
+                            UpdateSource.STARTUP -> UpdateUiState.Idle
+                            UpdateSource.MANUAL -> UpdateUiState.Failed("版本信息无法解析", source)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "check failed: $e")
+                _state.value = when (source) {
+                    UpdateSource.STARTUP -> UpdateUiState.Idle
+                    UpdateSource.MANUAL -> UpdateUiState.Failed(e.message ?: "检查更新失败", source)
+                }
+            } finally {
+                checking.set(false)
+            }
+        }
+    }
+
+    /**
+     * "本次忽略"：只跳过当前这个版本（存 release tag），About 页手动检查不受限。
+     * 强更版本不可忽略。
+     */
+    fun ignore(tagName: String, force: Boolean) {
+        if (force) return
+        scope.launch {
+            context.dataStore.edit { it[KEY_IGNORED_TAG] = tagName }
+        }
+        if (_state.value is UpdateUiState.Available) {
+            _state.value = UpdateUiState.Idle
+        }
+    }
+
+    /**
+     * 下载当前可用版本的 APK 到 cacheDir/update/，完成后校验 SHA256。
+     * 下载阶段沿用 [UpdateUiState.Available.source]，保证启动弹窗与 About 卡片按来源分轨。
+     */
+    fun download() {
+        val (release, source) = when (val current = _state.value) {
+            is UpdateUiState.Available -> current.release to current.source
+            is UpdateUiState.DownloadFailed -> current.release to current.source
+            else -> return
+        }
+        val url = release.apkUrl ?: run {
+            _state.value = UpdateUiState.DownloadFailed(release, "没有可用的安装包", source)
+            return
+        }
+        if (!downloading.compareAndSet(false, true)) return
+        scope.launch {
+            try {
+                val dir = File(context.cacheDir, UPDATE_DIR)
+                dir.mkdirs()
+                val target = File(dir, release.apkName ?: "update-${release.tagName}.apk")
+                _state.value = UpdateUiState.Downloading(release, 0L, 0L, source)
+                val result = UpdateDownloader.downloadApk(release, target) { downloaded, total ->
+                    _state.update { previous ->
+                        if (previous is UpdateUiState.Downloading && previous.release.tagName == release.tagName) {
+                            UpdateUiState.Downloading(release, downloaded, total, source)
+                        } else {
+                            previous
+                        }
+                    }
+                }
+                _state.value = when (result) {
+                    is DownloadResult.Success ->
+                        UpdateUiState.ReadyToInstall(release, result.file, verified = !release.apkDigest.isNullOrEmpty(), source = source)
+                    is DownloadResult.Error ->
+                        UpdateUiState.DownloadFailed(release, result.message, source)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "download failed: $e")
+                _state.value = UpdateUiState.DownloadFailed(release, e.message ?: "下载失败", source)
+            } finally {
+                downloading.set(false)
+            }
+        }
+    }
+
+    /**
+     * 拉起系统安装。未授予"安装未知应用"权限时跳转系统设置页并记录错误，授权后重试即可。
+     */
+    fun install() {
+        val ready = _state.value as? UpdateUiState.ReadyToInstall ?: return
+        scope.launch {
+            val ok = UpdateInstaller.installApk(context, ready.file)
+            if (!ok) {
+                _state.value = ready.copy(
+                    installError = "请在设置中允许本应用安装未知应用后重试"
+                )
+            }
+        }
+    }
+
+    private fun isForceUpdate(release: GitHubRelease): Boolean {
+        val minVersion = release.minVersion ?: return false
+        return BuildConfig.VERSION_CODE < minVersion
+    }
+
+    private suspend fun isIgnored(tagName: String): Boolean {
+        return runCatching {
+            context.dataStore.data.first()[KEY_IGNORED_TAG] == tagName
+        }.getOrDefault(false)
+    }
+
+    private suspend fun lastCheckTime(): Long {
+        return runCatching {
+            context.dataStore.data.first()[KEY_LAST_CHECK] ?: 0L
+        }.getOrDefault(0L)
+    }
+
+    private suspend fun saveLastCheckTime() {
+        runCatching {
+            context.dataStore.edit { it[KEY_LAST_CHECK] = System.currentTimeMillis() }
+        }
+    }
+
+    companion object {
+        private const val TAG = "UpdateManager"
+
+        /** 更新 APK 下载目录（cache 子目录，对应 FileProvider 的 update_apk paths）。 */
+        const val UPDATE_DIR = "update"
+
+        /** 启动检查节流间隔：6 小时。 */
+        const val CHECK_INTERVAL_MS = 6L * 60 * 60 * 1000
+
+        private val KEY_LAST_CHECK = longPreferencesKey("update_last_check_time")
+        private val KEY_IGNORED_TAG = stringPreferencesKey("update_ignored_tag")
+    }
+}
