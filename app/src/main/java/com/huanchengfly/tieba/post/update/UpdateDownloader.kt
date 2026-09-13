@@ -43,7 +43,10 @@ object UpdateDownloader {
     }
 
     /**
-     * ai 通道端点：recent releases 中过滤 prerelease==true 且 tag 含 -ai.，取 preVer 最大者。
+     * ai 通道端点：recent releases 中过滤 prerelease==true 且 tag 含 -ai.，取最新者。
+     * 排序必须 base 优先（base 高者恒胜，preVer 仅在同 base 内比较）：
+     * 只比 preVer 的话，base 升级窗口内 4.0.0-ai.51 会压过 4.0.1-ai.1 选出旧 base，
+     * 经 compare 判 Equal → UI 显示已是最新，新 base 推送被静默屏蔽（每个 base 升级必触发）。
      */
     fun fetchLatestAiRelease(root: String = apiRoot): GitHubRelease? {
         val json = httpGet("$root/releases?per_page=10") ?: return null
@@ -52,7 +55,9 @@ object UpdateDownloader {
             .mapNotNull { release ->
                 VersionCompat.parse(release.tagName)?.let { release to it }
             }
-            .maxByOrNull { it.second.preReleaseVer ?: 0 }
+            .maxWithOrNull(
+                compareBy({ it.second.base }, { it.second.preReleaseVer ?: 0 })
+            )
             ?.first
     }
 

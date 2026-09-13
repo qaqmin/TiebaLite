@@ -1,6 +1,7 @@
 package com.huanchengfly.tieba.post.update
 
 import android.content.Context
+import com.huanchengfly.tieba.post.R
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -86,13 +87,18 @@ class UpdateManager @Inject constructor(
     private val _state = MutableStateFlow<UpdateUiState>(UpdateUiState.Idle)
     val state: StateFlow<UpdateUiState> = _state.asStateFlow()
 
-    /** debug 构建专用：本地 mock 的 API 根地址覆盖（由启动 intent extra 注入）。 */
+    /**
+     * debug 构建专用：本地 mock 的 API 根地址覆盖（由启动 intent extra 注入）。
+     * 显式开关 mockUpdateEnabled：true 时 debug 构建走 mock 源；默认 false 走真实 GitHub，
+     * 保证 debug 构建的日常更新检查/真机验证走真实链路（mock 只在验收时打开）。
+     */
     private var mockApiRoot: String? = null
+    private var mockUpdateEnabled: Boolean = false
 
     private fun apiRoot(): String {
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && mockUpdateEnabled) {
             mockApiRoot?.takeIf { it.isNotBlank() }?.let { return it }
-            // debug 默认 mock 源（gradle buildConfigField，release 恒为空串）
+            // gradle buildConfigField 的 debug mock 源（release 恒为空串，永不进 release 路径）
             if (BuildConfig.MOCK_UPDATE_API_ROOT.isNotBlank()) {
                 return BuildConfig.MOCK_UPDATE_API_ROOT
             }
@@ -100,9 +106,10 @@ class UpdateManager @Inject constructor(
         return UpdateDownloader.DEFAULT_API_ROOT
     }
 
-    fun check(source: UpdateSource, mockRoot: String? = null) {
-        if (BuildConfig.DEBUG && !mockRoot.isNullOrBlank()) {
-            mockApiRoot = mockRoot
+    fun check(source: UpdateSource, mockRoot: String? = null, enableMock: Boolean = false) {
+        if (BuildConfig.DEBUG && enableMock) {
+            mockUpdateEnabled = true
+            if (!mockRoot.isNullOrBlank()) mockApiRoot = mockRoot
         }
         if (!checking.compareAndSet(false, true)) return
         scope.launch {
@@ -119,15 +126,16 @@ class UpdateManager @Inject constructor(
                 } else {
                     UpdateDownloader.fetchStableRelease(root)
                 }
-                saveLastCheckTime()
                 if (release == null) {
+                    // 网络瞬断/接口失败：不写 lastCheckTime，避免 6h 节流把下次启动检查也静默屏蔽
                     _state.value = when (source) {
                         // 启动检查失败静默，不打扰
                         UpdateSource.STARTUP -> UpdateUiState.Idle
-                        UpdateSource.MANUAL -> UpdateUiState.Failed("检查更新失败，请稍后重试", source)
+                        UpdateSource.MANUAL -> UpdateUiState.Failed(context.getString(R.string.text_update_check_failed), source)
                     }
                     return@launch
                 }
+                saveLastCheckTime()
                 when (VersionCompat.compare(BuildConfig.VERSION_NAME, release.tagName)) {
                     CompareResult.Newer -> {
                         val force = isForceUpdate(release)
@@ -152,7 +160,7 @@ class UpdateManager @Inject constructor(
                 Log.w(TAG, "check failed: $e")
                 _state.value = when (source) {
                     UpdateSource.STARTUP -> UpdateUiState.Idle
-                    UpdateSource.MANUAL -> UpdateUiState.Failed(e.message ?: "检查更新失败", source)
+                    UpdateSource.MANUAL -> UpdateUiState.Failed(e.message ?: context.getString(R.string.text_update_check_failed), source)
                 }
             } finally {
                 checking.set(false)
@@ -185,7 +193,7 @@ class UpdateManager @Inject constructor(
             else -> return
         }
         val url = release.apkUrl ?: run {
-            _state.value = UpdateUiState.DownloadFailed(release, "没有可用的安装包", source)
+            _state.value = UpdateUiState.DownloadFailed(release, context.getString(R.string.text_update_no_apk), source)
             return
         }
         if (!downloading.compareAndSet(false, true)) return
@@ -228,7 +236,7 @@ class UpdateManager @Inject constructor(
             val ok = UpdateInstaller.installApk(context, ready.file)
             if (!ok) {
                 _state.value = ready.copy(
-                    installError = "请在设置中允许本应用安装未知应用后重试"
+                    installError = context.getString(R.string.text_update_install_error)
                 )
             }
         }

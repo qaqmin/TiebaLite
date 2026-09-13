@@ -16,9 +16,11 @@ class UpdateViewModel @Inject constructor(
     val state = manager.state
 
     /**
-     * 启动自动检查。debug 构建可通过 [mockRoot] 覆盖 API 根地址用于本地 mock 验收。
+     * 启动自动检查。默认走真实 GitHub；debug 构建传 [enableMock]=true 时走本地 mock 源
+     * （[mockRoot] 可覆盖 gradle 注入的 MOCK_UPDATE_API_ROOT）。
      */
-    fun startupCheck(mockRoot: String? = null) = manager.check(UpdateSource.STARTUP, mockRoot)
+    fun startupCheck(mockRoot: String? = null, enableMock: Boolean = false) =
+        manager.check(UpdateSource.STARTUP, mockRoot, enableMock)
 
     /**
      * 关于页手动检查（不节流、不受"本次忽略"限制、失败可见）。
