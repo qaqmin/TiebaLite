@@ -34,7 +34,8 @@ object UpdateDownloader {
 
     /**
      * stable 通道端点：GitHub 语义上的最新非预发布 release。
-     * App 侧二次校验 tag 不含 -ai.（防 CI 漏加 --prerelease 导致 stable 通道拿到预发布包）。
+     * App 侧二次校验 tag 含 -ai. 则剔除（真实数据下 releases/latest 对 ai 预发布返回
+     * prerelease=false，该护栏仍是 stable/ai 通道分离的最后防线）。
      */
     fun fetchStableRelease(root: String = apiRoot): GitHubRelease? {
         val json = httpGet("${root.trimEnd('/')}/releases/latest") ?: return null
@@ -43,23 +44,15 @@ object UpdateDownloader {
     }
 
     /**
-     * ai 通道端点：recent releases 中过滤 prerelease==true 且 tag 含 -ai.，取最新者。
-     * 排序必须 base 优先（base 高者恒胜，preVer 仅在同 base 内比较）：
-     * 只比 preVer 的话，base 升级窗口内 4.0.0-ai.51 会压过 4.0.1-ai.1 选出旧 base，
-     * 经 compare 判 Equal → UI 显示已是最新，新 base 推送被静默屏蔽（每个 base 升级必触发）。
+     * ai 通道端点：recent releases 中筛 ai tag（tag 含 -ai.）取最新者。
+     * 判据只认 isAiTag 不认 isPrerelease：真实 CI 未加 --prerelease，
+     * 真实 ai release 的 prerelease=false，按 isPrerelease 筛会把它滤空、
+     * 两通道同时空转（P0-2 实测）。版本解析失败与 stable tag 由 [pickLatestAi] 统一剔除。
      */
     fun fetchLatestAiRelease(root: String = apiRoot): GitHubRelease? {
         // trimEnd('/')：mockRoot/自定义根尾带斜杠时防 "$root/..." 产生 // 双斜杠 404
         val json = httpGet("${root.trimEnd('/')}/releases?per_page=10") ?: return null
-        return GitHubRelease.fromJsonArray(json)
-            .filter { it.isPrerelease && it.isAiTag }
-            .mapNotNull { release ->
-                VersionCompat.parse(release.tagName)?.let { release to it }
-            }
-            .maxWithOrNull(
-                compareBy({ it.second.base }, { it.second.preReleaseVer ?: 0 })
-            )
-            ?.first
+        return pickLatestAi(GitHubRelease.fromJsonArray(json))
     }
 
     /**
@@ -145,6 +138,26 @@ object UpdateDownloader {
     }
 
     private const val DEFAULT_BUFFER_SIZE = 8192
+}
+
+/**
+ * ai 通道候选集选版（生产侧纯函数，可 JVM 单测）：
+ * 1. 只留 tag 含 -ai. 的候选（isAiTag——不依赖 CI 是否加 --prerelease，真实 CI 未加）；
+ * 2. tag 解析失败的剔除；
+ * 3. base 优先排序取最大：base 高者恒胜，preVer 仅在同 base 内比较
+ *    （只比 preVer 时 base 升级窗口内 4.0.0-ai.51 会压过 4.0.1-ai.1 选出旧 base，
+ *    经 compare 判 Equal → 新 base 推送被静默屏蔽，每个 base 升级必触发）。
+ */
+fun pickLatestAi(candidates: List<GitHubRelease>): GitHubRelease? {
+    return candidates.asSequence()
+        .filter { it.isAiTag }
+        .mapNotNull { release ->
+            VersionCompat.parse(release.tagName)?.let { release to it }
+        }
+        .maxWithOrNull(
+            compareBy({ it.second.base }, { it.second.preReleaseVer ?: 0 })
+        )
+        ?.first
 }
 
 sealed class DownloadResult {

@@ -216,45 +216,57 @@ class VersionCompatTest {
     // 注：pickApkAsset 依赖 org.json，android.jar stub（returnDefaultValues）下方法返回默认值，
     // 纯 JVM 单测无法覆盖真实 JSON 行为，资产挑选由本地 mock 设备端全链路验收覆盖。
 
-    // ---- ai 通道候选集选版（fetchLatestAiRelease 排序语义的纯函数镜像）----
-    // 选择器必须 base 优先：只比 preVer 时，base 升级窗口内旧 base 的高 ai 序号会压过
-    // 新 base 的低 ai 序号 → compare 判 Equal → 新 base 推送被静默屏蔽。
-    // fetchLatestAiRelease 含网络 IO 无法 JVM 单测，这里以同一 compareBy 键序对
-    // 候选对排序做镜像断言，锁定选择语义与 VersionCompat.compare 一致。
+    // ---- ai 通道候选集选版（直接调生产函数 pickLatestAi，非镜像副本）----
+    // P1 防回归：base 优先排序（只比 preVer 时 base 升级窗口内旧 base 高序号压过新 base）；
+    // P0-2 防回归：判据只认 isAiTag 不认 isPrerelease（真实 CI 未加 --prerelease，
+    // 真实 ai release 的 prerelease=false，按 isPrerelease 筛会把它滤空、两通道同时空转）。
 
-    private data class AiCandidate(val tag: String) {
-        val parsed: ParsedVersion = VersionCompat.parse(tag)!!
-    }
-
-    private fun selectLatest(candidates: List<String>): String =
-        candidates.map(::AiCandidate)
-            .maxWithOrNull(compareBy({ it.parsed.base }, { it.parsed.preReleaseVer ?: 0 }))!!
-            .tag
+    private fun rel(tag: String, prerelease: Boolean = false) = GitHubRelease(
+        tagName = tag, name = tag, htmlUrl = "", body = "",
+        isPrerelease = prerelease, apkUrl = null, apkName = null, apkDigest = null
+    )
 
     @Test
     fun `mixed base candidates - higher base wins regardless of ai ver`() {
-        // base 升级窗口内的真实事故形态：4.0.0-ai.51(perVer=51) vs 4.0.1-ai.1(preVer=1)
-        val selected = selectLatest(
-            listOf("4.0.0-ai.51", "4.0.1-ai.1", "4.0.0-ai.49")
+        // base 升级窗口内的真实事故形态：4.0.0-ai.51(preVer=51) vs 4.0.1-ai.1(preVer=1)
+        val selected = pickLatestAi(
+            listOf(rel("4.0.0-ai.51"), rel("4.0.1-ai.1"), rel("4.0.0-ai.49"))
         )
-        assertEquals("4.0.1-ai.1", selected)
+        assertEquals("4.0.1-ai.1", selected?.tagName)
     }
 
     @Test
     fun `same base candidates - higher ai ver wins`() {
-        val selected = selectLatest(
-            listOf("4.0.0-ai.9", "4.0.0-ai.51", "4.0.0-ai.10")
+        val selected = pickLatestAi(
+            listOf(rel("4.0.0-ai.9"), rel("4.0.0-ai.51"), rel("4.0.0-ai.10"))
         )
-        assertEquals("4.0.0-ai.51", selected)
+        assertEquals("4.0.0-ai.51", selected?.tagName)
+    }
+
+    @Test
+    fun `prerelease=false does not exclude ai release - P0-2 real CI data`() {
+        // 真实数据形态：/releases 返回的 ai tag prerelease=false（CI 未加 --prerelease），
+        // 旧判据 isPrerelease&&isAiTag 会滤空；现判据必须选中
+        val selected = pickLatestAi(
+            listOf(rel("v4.0.0-ai.50", prerelease = false), rel("v4.0.0-ai.49", prerelease = false))
+        )
+        assertEquals("v4.0.0-ai.50", selected?.tagName)
+    }
+
+    @Test
+    fun `stable and unparseable tags are excluded from ai channel`() {
+        val selected = pickLatestAi(
+            listOf(rel("v4.0.0"), rel("garbage-tag"), rel("4.0.0-ai.7"))
+        )
+        assertEquals("4.0.0-ai.7", selected?.tagName)
     }
 
     @Test
     fun `selected latest ai release compares Newer against any older-base local`() {
         // 选出的 release 对旧 base 本地版本必须判 Newer（不再有 Equal 静默屏蔽）
-        val selected = selectLatest(listOf("4.0.0-ai.51", "4.0.1-ai.1"))
-        assertEquals(CompareResult.Newer, cmp("4.0.0-ai.51", selected))
-        // 同 base 低 ai 序号的本地版本（4.0.1-ai.0 形态本地不存在，用 4.0.1-ai.1 之下最近者验证同 base 内升级路径）
-        assertEquals(CompareResult.Newer, cmp("4.0.0-ai.49", selected))
+        val selected = pickLatestAi(listOf(rel("4.0.0-ai.51"), rel("4.0.1-ai.1")))
+        assertEquals(CompareResult.Newer, cmp("4.0.0-ai.51", selected!!.tagName))
+        assertEquals(CompareResult.Newer, cmp("4.0.0-ai.49", selected.tagName))
     }
 
     // ---- SemVer 库语义（4.0 缺省段补 0）----
