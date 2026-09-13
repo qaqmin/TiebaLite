@@ -37,7 +37,7 @@ object UpdateDownloader {
      * App 侧二次校验 tag 不含 -ai.（防 CI 漏加 --prerelease 导致 stable 通道拿到预发布包）。
      */
     fun fetchStableRelease(root: String = apiRoot): GitHubRelease? {
-        val json = httpGet("$root/releases/latest") ?: return null
+        val json = httpGet("${root.trimEnd('/')}/releases/latest") ?: return null
         val release = GitHubRelease.fromJson(JSONObject(json)) ?: return null
         return if (release.isAiTag) null else release
     }
@@ -49,7 +49,8 @@ object UpdateDownloader {
      * 经 compare 判 Equal → UI 显示已是最新，新 base 推送被静默屏蔽（每个 base 升级必触发）。
      */
     fun fetchLatestAiRelease(root: String = apiRoot): GitHubRelease? {
-        val json = httpGet("$root/releases?per_page=10") ?: return null
+        // trimEnd('/')：mockRoot/自定义根尾带斜杠时防 "$root/..." 产生 // 双斜杠 404
+        val json = httpGet("${root.trimEnd('/')}/releases?per_page=10") ?: return null
         return GitHubRelease.fromJsonArray(json)
             .filter { it.isPrerelease && it.isAiTag }
             .mapNotNull { release ->
