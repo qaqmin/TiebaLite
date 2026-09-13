@@ -73,6 +73,7 @@ import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.ModalBottomSheetLayout
 import com.google.accompanist.systemuicontroller.SystemUiController
+import com.huanchengfly.tieba.post.BuildConfig
 import com.huanchengfly.tieba.post.api.retrofit.exception.getErrorMessage
 import com.huanchengfly.tieba.post.arch.BaseComposeActivity
 import com.huanchengfly.tieba.post.arch.GlobalEvent
@@ -342,6 +343,12 @@ class MainActivityV2 : BaseComposeActivity() {
         }, 100)
     }
 
+    /** debug 构建本地 mock 验收开关（onCreate 从 intent extra 读取，见 onCreate 注释）。 */
+    private var updateMockEnabled: Boolean = false
+
+    /** debug 构建本地 mock 根地址覆盖（--es tieba.update.mockRoot http://...）。 */
+    private var updateMockRoot: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -358,6 +365,15 @@ class MainActivityV2 : BaseComposeActivity() {
         }
         launch {
             ClientUtils.setActiveTimestamp()
+        }
+        // debug 构建本地 mock 验收入口：adb shell am start 带
+        // --ez tieba.update.mock true [--es tieba.update.mockRoot http://...] 显式打开，
+        // 默认(无 extra)恒走真实 GitHub——mock 只在验收时可达，不污染日常链路。
+        if (BuildConfig.DEBUG && intent?.getBooleanExtra("tieba.update.mock", false) == true) {
+            intent.getStringExtra("tieba.update.mockRoot")?.let { root ->
+                updateMockRoot = root
+            }
+            updateMockEnabled = true
         }
         intent?.let { checkIntent(it) }
     }
@@ -465,7 +481,9 @@ class MainActivityV2 : BaseComposeActivity() {
         val updateState by updateViewModel.state.collectAsState()
         UpdateDialog(state = updateState, viewModel = updateViewModel)
         LaunchedEffect(Unit) {
-            updateViewModel.startupCheck()
+            // mock 开关/根地址在 onCreate 从 intent extra 读取（见 updateMockEnabled 注释），
+            // 重组时重复调用 startupCheck 也只会走 UpdateManager 的 checking CAS 去重
+            updateViewModel.startupCheck(updateMockRoot, updateMockEnabled)
         }
         AlertDialog(
             dialogState = okSignAlertDialogState,

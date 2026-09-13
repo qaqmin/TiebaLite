@@ -223,13 +223,13 @@ class VersionCompatTest {
     // 候选对排序做镜像断言，锁定选择语义与 VersionCompat.compare 一致。
 
     private data class AiCandidate(val tag: String) {
-        val parsed: VersionCompat.ParsedVersion = VersionCompat.parse(tag)!!
+        val parsed: ParsedVersion = VersionCompat.parse(tag)!!
     }
 
     private fun selectLatest(candidates: List<String>): String =
         candidates.map(::AiCandidate)
-            .maxWithOrNull(compareBy({ it.parsed.base }, { it.parsed.preReleaseVer ?: 0 }))
-            !!.tag
+            .maxWithOrNull(compareBy({ it.parsed.base }, { it.parsed.preReleaseVer ?: 0 }))!!
+            .tag
 
     @Test
     fun `mixed base candidates - higher base wins regardless of ai ver`() {

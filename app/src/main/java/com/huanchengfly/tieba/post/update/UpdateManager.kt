@@ -88,7 +88,9 @@ class UpdateManager @Inject constructor(
     val state: StateFlow<UpdateUiState> = _state.asStateFlow()
 
     /**
-     * debug 构建专用：本地 mock 的 API 根地址覆盖（由启动 intent extra 注入）。
+     * debug 构建专用：本地 mock 的 API 根地址覆盖。MainActivityV2 从启动 intent extra
+     * （tieba.update.mock / tieba.update.mockRoot，仅 debug 生效）读取后经 [check] 的
+     * mockRoot/enableMock 注入；未传覆盖值时回落到 gradle 注入的 MOCK_UPDATE_API_ROOT。
      * 显式开关 mockUpdateEnabled：true 时 debug 构建走 mock 源；默认 false 走真实 GitHub，
      * 保证 debug 构建的日常更新检查/真机验证走真实链路（mock 只在验收时打开）。
      */
