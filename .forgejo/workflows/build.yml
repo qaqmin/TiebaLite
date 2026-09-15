@@ -75,11 +75,6 @@ jobs:
             git push origin HEAD:4.0-dev
           fi
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/4.0-dev' }}
-
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
