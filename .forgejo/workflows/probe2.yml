@@ -1,0 +1,31 @@
+name: Probe2
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  build:
+    runs-on: codeberg-small
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate consistent debug keystore
+        if: env.HAS_KEYSTORE != 'true'
+        run: |
+          KEYSTORE_FILE=app/tblite_debug.jks
+          if [ ! -f "$KEYSTORE_FILE" ]; then
+            keytool -genkeypair -v \
+              -keystore "$KEYSTORE_FILE" \
+              -keyalg RSA -keysize 2048 -validity 36500 \
+              -dname "CN=TiebaLite" \
+              -storepass tiebalite \
+              -keypass tiebalite \
+              -alias tiebalite
+          fi
+          echo keystore.file="$KEYSTORE_FILE" > keystore.properties
+          echo keystore.password=tiebalite >> keystore.properties
+          echo keystore.key.alias=tiebalite >> keystore.properties
+          echo keystore.key.password=tiebalite >> keystore.properties
+      - name: Gradlew version
+        run: ./gradlew --version | head -6
