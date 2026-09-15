@@ -1,0 +1,10 @@
+name: Smoke
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  smoke:
+    runs-on: codeberg-small
+    steps:
+      - name: Hello
+        run: echo "runner ok"
