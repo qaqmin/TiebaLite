@@ -1,0 +1,14 @@
+name: Probe4
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  build:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Gradlew direct
+        run: ./gradlew --version 2>&1 | head -8 || echo "DIRECT_EXIT=$?"
+      - name: Gradlew sh
+        run: sh ./gradlew --version 2>&1 | head -8 || echo "SH_EXIT=$?"
