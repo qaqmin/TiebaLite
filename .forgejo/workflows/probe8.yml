@@ -1,0 +1,20 @@
+name: Probe8
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  build:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "zulu"
+      - name: keytool debug
+        run: |
+          which keytool || echo "no keytool"
+          keytool -genkeypair -v -keystore test.jks -keyalg RSA -keysize 2048 -validity 100 -dname "CN=T" -storepass tiebalite -keypass tiebalite -alias t > keytool.log 2>&1 || echo "EXIT=$?"
+          cat keytool.log | head -20
