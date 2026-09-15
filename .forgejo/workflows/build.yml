@@ -28,6 +28,14 @@ jobs:
           distribution: "zulu"
           cache: gradle
 
+      - name: Generate keystore.properties
+        run: |
+          printf 'keystore.file=app/tblite_debug.jks
+keystore.password=tiebalite
+keystore.key.alias=tiebalite
+keystore.key.password=tiebalite
+' > keystore.properties
+
       - name: Build Debug APK
         run: |
           ./gradlew assembleDebug --console=plain 2>&1 | tee build.log | tail -40
