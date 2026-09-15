@@ -1,11 +1,11 @@
-# AI Iteration Notice / AI 迭代升级说明
+# 迭代升级说明 / Changelog
 
-> 本文档记录 AI 辅助迭代升级的所有变更内容。
-> This document records all changes made by AI-assisted iterative upgrades.
+> 本文档记录迭代升级的所有变更内容。
+> This document records all changes in iterative upgrades.
 
 ---
 
-## v4.0.0-ai.50 (2026-09-11) 🔥 话题榜完整列表页可点击
+## v4.0.0.50 (2026-09-11) 🔥 话题榜完整列表页可点击
 
 ### 🇨🇳 中文
 
@@ -41,7 +41,7 @@
 
 ---
 
-## v4.0.0-ai.49 (2026-09-09) 🔥 热榜话题卡片可点击
+## v4.0.0.49 (2026-09-09) 🔥 热榜话题卡片可点击
 
 ### 🇨🇳 中文
 
@@ -77,7 +77,7 @@
 
 ---
 
-## v4.0.0-ai.48 (2026-09-10) 🖼️ 楼中楼带图评论完整渲染
+## v4.0.0.48 (2026-09-10) 🖼️ 楼中楼带图评论完整渲染
 
 ### 🇨🇳 中文
 
@@ -117,7 +117,7 @@
 
 ---
 
-## v4.0.0-ai.47 (2026-09-09) 📱 主页面底栏导航条适配
+## v4.0.0.47 (2026-09-09) 📱 主页面底栏导航条适配
 
 ### 🇨🇳 中文
 
@@ -153,7 +153,7 @@
 
 ---
 
-## v4.0.0-ai.46 (2026-09-08) 🖼️ 图片查看沉浸过渡 + 列表滚动位置记忆
+## v4.0.0.46 (2026-09-08) 🖼️ 图片查看沉浸过渡 + 列表滚动位置记忆
 
 ### 🇨🇳 中文
 
@@ -189,39 +189,39 @@
 
 ---
 
-## v4.0.0-ai.45 (2026-09-08) 🎯 楼中楼回复绑定修正 + 吧名路由加固
+## v4.0.0.45 (2026-09-08) 🎯 楼中楼回复绑定修正 + 吧名路由加固
 
 ### 🇨🇳 中文
 
 **回复对象精准锁定 + 特殊吧名路由加固**
 
 - 修复楼中楼回复降级：回帖页路由此前丢弃 subPostId，回复楼中楼内评论时对象会降级到楼层级——现已补齐参数消费，回复精确绑定目标评论（PR#33 后续加固）
-- 三处回复导航的吧名参数补 `Uri.encode`：吧名含 `&`/`#`/空格等特殊字符时路由不再被破坏（与 ai.39 编码规范对齐）
+- 三处回复导航的吧名参数补 `Uri.encode`：吧名含 `&`/`#`/空格等特殊字符时路由不再被破坏（与 v4.0.0.39 编码规范对齐）
 
 ### 🇬🇧 English
 
 **Precise reply targeting + special-forum-name route hardening**
 
 - Fixed sub-thread reply degradation: the reply route previously dropped subPostId, causing replies to a sub-thread comment to fall back to floor level — parameter consumption now completed for precise binding (PR#33 follow-up)
-- Added `Uri.encode` to forum-name parameters in three reply navigation calls: routes survive forum names containing `&`/`#`/spaces (aligned with the ai.39 encoding spec)
+- Added `Uri.encode` to forum-name parameters in three reply navigation calls: routes survive forum names containing `&`/`#`/spaces (aligned with the v4.0.0.39 encoding spec)
 
 ### 🇯🇵 日本語
 
 **返信ターゲットの精密化 + 特殊吧名ルートの強化**
 
 - サブスレッド返信のターゲット降級を修正：ルートが subPostId を破棄し、返信がフロアレベルに落ちる問題を解消、パラメータ消費を補完（PR#33 続き）
-- 3 箇所の返信ナビゲーションで吧名パラメータに `Uri.encode` を追加：`&`/`#`/空白を含む吧名でもルートが壊れない（ai.39 仕様に準拠）
+- 3 箇所の返信ナビゲーションで吧名パラメータに `Uri.encode` を追加：`&`/`#`/空白を含む吧名でもルートが壊れない（v4.0.0.39 仕様に準拠）
 
 ### 🇰🇷 한국어
 
 **답글 대상 정밀 고정 + 특수 바명 라우트 강화**
 
 - 하위 스레드 답글 대상 강등 수정: 라우트가 subPostId 를 버려 답글이 층 레벨로 떨어지던 문제 해소, 파라미터 소비 보완 (PR#33 후속)
-- 3 곳의 답글 내비게이션에 바명 파라미터 `Uri.encode` 추가: `&`/`#`/공백 포함 바명도 라우트 손상 없음 (ai.39 규격 준수)
+- 3 곳의 답글 내비게이션에 바명 파라미터 `Uri.encode` 추가: `&`/`#`/공백 포함 바명도 라우트 손상 없음 (v4.0.0.39 규격 준수)
 
 ---
 
-## v4.0.0-ai.44 (2026-09-07) 🚀 启动页自定义 + 楼中楼图片占位
+## v4.0.0.44 (2026-09-07) 🚀 启动页自定义 + 楼中楼图片占位
 
 ### 🇨🇳 中文
 
@@ -265,7 +265,7 @@
 
 ---
 
-## v4.0.0-ai.43 (2026-09-05) 💬 楼层回复定位修正 + 回帖页状态栏避让
+## v4.0.0.43 (2026-09-05) 💬 楼层回复定位修正 + 回帖页状态栏避让
 
 ### 🇨🇳 中文
 
@@ -305,7 +305,7 @@
 
 ---
 
-## v4.0.0-ai.42 (2026-09-02) 👍 点赞列表完整渲染
+## v4.0.0.42 (2026-09-02) 👍 点赞列表完整渲染
 
 ### 🇨🇳 中文
 
@@ -349,14 +349,14 @@
 
 ---
 
-## v4.0.0-ai.41 (2026-09-01) 🖐️ 手势热区二次加固
+## v4.0.0.41 (2026-09-01) 🖐️ 手势热区二次加固
 
 ### 🇨🇳 中文
 
 **底栏手势热区确定性兜底 + 弹层避让补全**
 
 #### 背景
-ai.40 的避让修复在部分国产 ROM（ColorOS 16 等手势导航机型）上未完全生效：
+v4.0.0.40 的避让修复在部分国产 ROM（ColorOS 16 等手势导航机型）上未完全生效：
 系统在手势模式下可能将 `navigationBars` 与 `safeGestures` 两个 inset 同时上报为 0，
 基于 inset 的避让在数学上等于没有生效。
 
@@ -372,7 +372,7 @@ ai.40 的避让修复在部分国产 ROM（ColorOS 16 等手势导航机型）�
 
 #### Background
 On some ROMs (e.g. ColorOS 16 gesture navigation), both `navigationBars` and
-`safeGestures` may be reported as 0, so the ai.40 inset-based avoidance was a no-op.
+`safeGestures` may be reported as 0, so the v4.0.0.40 inset-based avoidance was a no-op.
 
 #### Fix
 - New unified bottom-bar safety component: real insets first, **deterministic 28dp
@@ -382,7 +382,7 @@ On some ROMs (e.g. ColorOS 16 gesture navigation), both `navigationBars` and
 
 ---
 
-## v4.0.0-ai.40 (2026-08-31) 🧭 举报跳转修正 + 全面屏手势避让
+## v4.0.0.40 (2026-08-31) 🧭 举报跳转修正 + 全面屏手势避让
 
 ### 🇨🇳 中文
 
@@ -415,7 +415,7 @@ On some ROMs (e.g. ColorOS 16 gesture navigation), both `navigationBars` and
 
 ---
 
-## v4.0.0-ai.39 (2026-08-31) 🛡️ 特殊字符路由加固
+## v4.0.0.39 (2026-08-31) 🛡️ 特殊字符路由加固
 
 ### 🇨🇳 中文
 
@@ -465,7 +465,7 @@ routes without URI encoding, breaking Navigation's route matching and throwing
 
 ---
 
-## v4.0.0-ai.38 (2026-08-30) 🚀 启动稳定性修复 + 收藏偏好贯通
+## v4.0.0.38 (2026-08-30) 🚀 启动稳定性修复 + 收藏偏好贯通
 
 ### 🇨🇳 中文
 
@@ -510,7 +510,7 @@ routes without URI encoding, breaking Navigation's route matching and throwing
 
 ---
 
-## v4.0.0-ai.4 (2026-06-12) 🔧 构建链升级 + 源码修复
+## v4.0.0.4 (2026-06-12) 🔧 构建链升级 + 源码修复
 
 ### 🇨🇳 中文
 
@@ -546,7 +546,7 @@ routes without URI encoding, breaking Navigation's route matching and throwing
 
 #### 版本信息
 - `versionCode`: `400003` → `400004`
-- `versionName`: `4.0.0-ai.3` → `4.0.0-ai.4`
+- `versionName`: `4.0.0-v4.0.0.3` → `4.0.0-v4.0.0.4`
 
 ### 🇺🇸 English
 
@@ -582,7 +582,7 @@ Due to a NPE bug in compose-destinations 1.10.0's KSP processor, the following d
 
 #### Version Info
 - `versionCode`: `400003` → `400004`
-- `versionName`: `4.0.0-ai.3` → `4.0.0-ai.4`
+- `versionName`: `4.0.0-v4.0.0.3` → `4.0.0-v4.0.0.4`
 
 ### 🇯🇵 日本語
 
@@ -680,7 +680,7 @@ compose-destinations 1.10.0 KSP 프로세서의 NPE 버그로 인해 다음 의�
 
 ---
 
-## v4.0.0-ai.2 (2026-06-09)
+## v4.0.0.2 (2026-06-09)
 
 ### 🇨🇳 中文
 
@@ -710,17 +710,17 @@ compose-destinations 1.10.0 KSP 프로세서의 NPE 버그로 인해 다음 의�
 
 ---
 
-## v4.0.0-ai.1 (2026-06-09)
+## v4.0.0.1 (2026-06-09)
 
 ### 🇨🇳 中文
 
-**AI 迭代升级版本 — 首次发布**
+**迭代升级版本 — 首次发布**
 
-本版本由某不知名 AI 进行首次迭代升级，主要变更如下：
+本版本为首次迭代升级，主要变更如下：
 
 #### 文档完善
 - 更新 README.md：保留原作者全部声明
-- 新增四国语言（中/日/韩/英）AI 迭代声明
+- 新增四国语言（中/日/韩/英）迭代声明
 - 新增构建说明和版本记录
 - 新增免责声明
 - 新增 CREDITS.md 原作者致敬文件
@@ -732,13 +732,13 @@ compose-destinations 1.10.0 KSP 프로세서의 NPE 버그로 인해 다음 의�
 
 ### 🇺🇸 English
 
-**AI Iteration Version — First Release**
+**Iterative Upgrade — First Release**
 
-This version is the first iterative upgrade performed by an anonymous AI agent (某不知名 AI):
+This is the first iterative upgrade. Main changes:
 
 #### Documentation
 - Updated README.md with full preservation of original author credits
-- Added 4-language AI iteration declarations (CN/JP/KR/EN)
+- Added 4-language (CN/JP/KR/EN) iteration notices
 - Added build instructions and version history
 - Added disclaimers
 - Added CREDITS.md honoring original author
@@ -750,7 +750,7 @@ This version is the first iterative upgrade performed by an anonymous AI agent (
 
 ### 🇯🇵 日本語
 
-**AI イテレーション版 — 初回リリース**
+**イテレーション版 — 初回リリース**
 
 #### ドキュメント
 - README.md を更新、原作者のクレジットを完全に保持
@@ -759,9 +759,9 @@ This version is the first iterative upgrade performed by an anonymous AI agent (
 
 ### 🇰🇷 한국어
 
-**AI 반복 업그레이드 버전 — 첫 번째 릴리스**
+**반복 업그레이드 버전 — 첫 번째 릴리스**
 
 #### 문서
 - README.md 업데이트, 원저자 크레딧 완전 보존
-- 4개국어 AI 반복 업그레이드 선언 추가
+- 4개국어 반복 업그레이드 선언 추가
 - CREDITS.md와 AI_CHANGELOG.md 추가
