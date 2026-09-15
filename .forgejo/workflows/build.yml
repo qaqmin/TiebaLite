@@ -71,3 +71,5 @@ jobs:
             app/build/outputs/apk/release/*.apk \
             --clobber
           echo "Done!"
+
+# runner: codeberg-medium (8G RAM, 10min)
