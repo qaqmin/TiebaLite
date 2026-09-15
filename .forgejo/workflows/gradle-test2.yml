@@ -1,0 +1,12 @@
+name: GradleTest2
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  t:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Gradle wrapper version
+        run: ./gradlew --version | head -6
