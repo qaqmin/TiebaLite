@@ -29,7 +29,9 @@ jobs:
           cache: gradle
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          ./gradlew assembleDebug --console=plain 2>&1 | tee build.log | tail -40
+          exit ${PIPESTATUS[0]}
 
       - name: Unit Tests
         run: ./gradlew testDebugUnitTest
