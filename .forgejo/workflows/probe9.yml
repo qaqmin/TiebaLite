@@ -1,0 +1,20 @@
+name: Probe9
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  build:
+    runs-on: codeberg-small
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "zulu"
+          cache: gradle
+      - name: Test upload-artifact availability
+        run: echo "checking"
