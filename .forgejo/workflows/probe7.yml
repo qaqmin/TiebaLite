@@ -1,0 +1,27 @@
+name: Probe7
+on:
+  push:
+    branches: [4.0-dev]
+jobs:
+  build:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "zulu"
+          cache: gradle
+      - name: keytool genkeypair
+        run: |
+          keytool -genkeypair -v \
+            -keystore app/tblite_debug.jks \
+            -keyalg RSA -keysize 2048 -validity 36500 \
+            -dname "CN=TiebaLite" \
+            -storepass tiebalite \
+            -keypass tiebalite \
+            -alias tiebalite
+      - name: Gradlew version
+        run: ./gradlew --version 2>&1 | head -8 || echo "EXIT=$?"
