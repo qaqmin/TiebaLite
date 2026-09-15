@@ -1,0 +1,14 @@
+name: PermTest
+on:
+  push:
+    branches: [4.0-dev]
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: codeberg-small
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
+    steps:
+      - name: Echo
+        run: echo "perm ok $HAS_KEYSTORE"
