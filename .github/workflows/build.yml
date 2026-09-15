@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: codeberg-medium
+    runs-on: codeberg-small
     env:
       HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
 
