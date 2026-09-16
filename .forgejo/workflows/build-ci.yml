@@ -32,6 +32,9 @@ jobs:
         run: |
           printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
 
+      - name: Verify keystore.properties
+        run: ls -la keystore.properties && cat keystore.properties
+
       - name: Build Debug APK
         run: |
           ./gradlew assembleDebug --console=plain 2>&1 | tee build.log | tail -40
