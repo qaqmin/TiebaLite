@@ -82,4 +82,4 @@ keystore.key.password=tiebalite
             --clobber
           echo "Done!"
 
-# runner: codeberg-medium (8G RAM, 10min) # v2
+# runner: codeberg-medium (8G RAM, 10min) # v3
