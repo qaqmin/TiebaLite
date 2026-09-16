@@ -61,7 +61,8 @@ android {
         includeSourceInformation = false
     }
     signingConfigs {
-        if (property.keystore.file.isNotBlank()) {
+        // keystore.properties 缺失时 sweetProperty provider 求值报错, 先判文件存在(无签名配置也可构建 debug)
+        if (rootDir.resolve("keystore.properties").exists() && property.keystore.file.isNotBlank()) {
             create("config") {
                 storeFile = file(File(rootDir, property.keystore.file))
                 storePassword = property.keystore.password
