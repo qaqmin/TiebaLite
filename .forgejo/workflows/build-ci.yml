@@ -30,11 +30,7 @@ jobs:
 
       - name: Generate keystore.properties
         run: |
-          printf 'keystore.file=app/tblite_debug.jks
-keystore.password=tiebalite
-keystore.key.alias=tiebalite
-keystore.key.password=tiebalite
-' > keystore.properties
+          printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
 
       - name: Build Debug APK
         run: |
