@@ -51,7 +51,13 @@ jobs:
             echo "no local proxy, using direct connection"
           fi
           ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee build.log | tail -60
-          exit ${PIPESTATUS[0]}
+          e=${PIPESTATUS[0]}
+          if [ $e -ne 0 ]; then
+            echo "===== FAILURE ROOT CAUSE ====="
+            grep -m5 -B2 -A8 "Caused by" build.log || grep -m3 -B3 -A10 "What went wrong" build.log || echo "no marker found"
+            echo "===== END ====="
+          fi
+          exit $e
 
       - name: Unit Tests
         run: ./gradlew testDebugUnitTest
