@@ -1,16 +1,13 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-        maven("https://jitpack.io")
-        // Aliyun mirrors as fallback for China-only libraries
-        maven("https://maven.aliyun.com/repository/google")
-        maven("https://maven.aliyun.com/repository/central")
+        // 国内镜像优先 (国际源间歇被掐: 09-16 CI 全红根因), 未命中自动回落官方源
+        maven("https://maven.aliyun.com/repository/gradle-plugin")
         maven("https://maven.aliyun.com/repository/public")
+        maven("https://maven.aliyun.com/repository/google")
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
     }
 }
 plugins {
