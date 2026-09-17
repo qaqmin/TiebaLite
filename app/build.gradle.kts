@@ -121,18 +121,20 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        freeCompilerArgs += listOf(
+        val composeArgs = listOf(
             "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
-        )
-        freeCompilerArgs += listOf(
+            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
             "-P",
             "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
         )
-        freeCompilerArgs += listOf(
-            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
+        // compose_stability_configuration.txt 被本地 gitignore, CI checkout 后缺失;
+        // 缺文件时插件 Provider 无值 -> "Cannot query the value of this provider" (09-16 CI 全红根因之二)
+        freeCompilerArgs += if (rootDir.resolve("compose_stability_configuration.txt").exists())
+            composeArgs + listOf(
+                "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
                     project.rootDir.absolutePath + "/compose_stability_configuration.txt"
-        )
+            )
+        else composeArgs
     }
     packaging {
         resources {
