@@ -26,7 +26,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "zulu"
-          cache: gradle
 
       - name: Generate keystore.properties
         run: |
@@ -37,6 +36,8 @@ jobs:
 
       - name: Build Debug APK
         run: |
+          sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
+          grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           ./gradlew assembleDebug --console=plain 2>&1 | tee build.log | tail -40
           exit ${PIPESTATUS[0]}
 
