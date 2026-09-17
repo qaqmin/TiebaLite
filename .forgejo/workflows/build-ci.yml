@@ -42,9 +42,10 @@ jobs:
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 本地 runner (Fake-IP 环境) 需走宿主机代理拉 Maven 依赖; 云端 runner 探测不到代理自动跳过
+          # 写进仓库 gradle.properties (gradle 必读, 不依赖 GRADLE_USER_HOME/挂载)
           if curl -s --max-time 3 -o /dev/null -x http://host.docker.internal:6789 https://repo.maven.apache.org/maven2/; then
-            mkdir -p "${GRADLE_USER_HOME:-$HOME/.gradle}"
-            printf 'systemProp.http.proxyHost=host.docker.internal\nsystemProp.http.proxyPort=6789\nsystemProp.https.proxyHost=host.docker.internal\nsystemProp.https.proxyPort=6789\nsystemProp.http.nonProxyHosts=localhost|127.*|host.docker.internal|mirrors.cloud.tencent.com|mirrors.huaweicloud.com|maven.aliyun.com\n' >> "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"
+            printf '\nsystemProp.http.proxyHost=host.docker.internal\nsystemProp.http.proxyPort=6789\nsystemProp.https.proxyHost=host.docker.internal\nsystemProp.https.proxyPort=6789\nsystemProp.http.nonProxyHosts=localhost|127.*|host.docker.internal|mirrors.cloud.tencent.com|mirrors.huaweicloud.com|maven.aliyun.com\n' >> gradle.properties
+            grep -c systemProp gradle.properties
             echo "gradle proxy enabled (local runner detected)"
           else
             echo "no local proxy, using direct connection"
