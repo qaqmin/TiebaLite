@@ -93,17 +93,12 @@ jobs:
             echo "===== inner Caused by 段 (MissingValue 前后) ====="
             grep -q "Caused by: org.gradle.api.internal.provider.MissingValueException" build.log && awk '/Caused by: org.gradle.api.internal.provider.MissingValueException/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
           } | tee -a "$GITHUB_STEP_SUMMARY" || true
-          # build.log 全文存为 artifact, 以便排查 inner stack
-          mkdir -p diag && cp build.log diag/ 2>/dev/null || true
+          # build.log 全文 base64 打进 summary (runner 拉 upload-artifact action 时 TLS 间歇被掐,
+          # 整个 job 直接失败, 故改纯 shell: 截取关键段已足够, 另存 base64 备查)
+          echo '```' >> "$GITHUB_STEP_SUMMARY" || true
+          grep -c "" build.log >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY" || true
           exit $e
-
-      - name: Upload build.log
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-log
-          path: diag/build.log
-          if-no-files-found: ignore
 
       - name: Unit Tests
         run: ./gradlew testDebugUnitTest
