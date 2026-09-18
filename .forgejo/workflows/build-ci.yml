@@ -46,8 +46,8 @@ jobs:
           # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
           ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
           for t in :app:kaptGenerateStubsDebugKotlin :app:kspDebugKotlin :app:compileDebugKotlin :app:compileDebugJavaWithJavac :app:dataBindingGenBaseClassesDebug :app:processDebugMainManifest; do
-            ./gradlew $t --dry-run --console=plain > dry.log 2>&1
-            rc=$?
+            rc=0
+            ./gradlew $t --dry-run --console=plain > dry.log 2>&1 || rc=$?
             echo "=== $t rc=$rc ==="
             grep -i "What went wrong" -A4 dry.log | head -8 || true
             grep -i "Caused by" dry.log | head -3 || true
