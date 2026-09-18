@@ -30,13 +30,16 @@ if (!isSelfBuild && !sha.isNullOrEmpty()) {
     applicationVersionName += "+${sha.substring(0, 7)}"
 }
 
-wire {
-    sourcePath {
-        srcDir("src/main/protos")
-    }
+// -PnoWire 探针: CI 二分用, 跳过 wire 插件配置定位空 provider 的 file dependency
+if (!project.hasProperty("noWire")) {
+    wire {
+        sourcePath {
+            srcDir("src/main/protos")
+        }
 
-    kotlin {
-        android = true
+        kotlin {
+            android = true
+        }
     }
 }
 
