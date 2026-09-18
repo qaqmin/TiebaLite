@@ -162,9 +162,12 @@ android {
 
             (this as BaseVariantOutputImpl).outputFileName = fileName
         }
-        kotlin.sourceSets {
-            getByName(variant.name) {
-                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+        // -PnoSrcDir 探针: CI 二分用, 跳过 ksp 生成目录 srcDir 定位空 provider
+        if (!project.hasProperty("noSrcDir")) {
+            kotlin.sourceSets {
+                getByName(variant.name) {
+                    kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+                }
             }
         }
     }

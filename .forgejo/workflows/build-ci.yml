@@ -76,6 +76,11 @@ jobs:
           rc=0
           ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoWire --console=plain > dry3.log 2>&1 || rc=$?
           echo "=== javac+noWire rc=$rc ==="
+          grep -i "What went wrong" -A4 dry3.log | head -8 || true
+          echo "=== 再试 -PnoSrcDir (跳过 ksp srcDir) ==="
+          rc=0
+          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoSrcDir --console=plain > dry4.log 2>&1 || rc=$?
+          echo "=== javac+noSrcDir rc=$rc ==="
           grep -i "What went wrong" -A4 dry2.log | head -8 || true
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
