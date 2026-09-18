@@ -43,8 +43,8 @@ jobs:
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
-          ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1
-          e=$?
+          ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
+          e=${e:-0}
           {
             echo "===== GRADLE EXIT: $e ====="
             grep -n "FAILURE\|What went wrong" build.log | head -5 || true
