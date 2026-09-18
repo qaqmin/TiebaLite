@@ -43,15 +43,14 @@ jobs:
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
-          ./gradlew assembleDebug --stacktrace --info --console=plain 2>&1 | tee build.log | tail -80
-          e=${PIPESTATUS[0]}
-          if [ $e -ne 0 ]; then
-            echo "===== FAILURE ROOT CAUSE (What went wrong) ====="
-            grep -m5 "What went wrong" -A30 build.log || true
-            echo "===== Caused by head ====="
-            grep -m3 "Caused by" -B10 build.log | head -60 || true
-            echo "===== END ====="
-          fi
+          ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1
+          e=$?
+          echo "===== GRADLE EXIT: $e ====="
+          grep -n "FAILURE\|What went wrong" build.log | head -5 || true
+          echo "===== What went wrong 头部 ====="
+          awk "/What went wrong/{found=1} found{print; n++} n>60{exit}" build.log || true
+          echo "===== 失败前的最后配置行 ====="
+          grep -n "MissingValueException\|Could not determine" build.log | head -10 || true
           exit $e
 
       - name: Unit Tests
