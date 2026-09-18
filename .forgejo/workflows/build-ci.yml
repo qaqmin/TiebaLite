@@ -47,8 +47,8 @@ jobs:
           e=${e:-0}
           {
             echo "===== GRADLE EXIT: $e ====="
-            echo "===== MissingValue 上下文 (build.log 3960-4060 行) ====="
-            sed -n '3960,4060p' build.log || true
+            echo "===== What went wrong 前 80 行 ====="
+            grep -n -m1 "What went wrong" build.log >/dev/null && awk '/What went wrong/{for(i=NR-80;i<NR;i++)if(i>0)print buf[i%200]; print; exit} {buf[NR%200]=$0}' build.log || true
           } | tee -a "$GITHUB_STEP_SUMMARY" || true
           exit $e
 
