@@ -47,7 +47,7 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
           ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
-          for t in :app:kaptDebugKotlin :app:kaptGenerateStubsDebugKotlin :app:kspDebugKotlin :app:compileDebugKotlin :app:compileDebugJavaWithJavac :app:processDebugMainManifest; do
+          for t in :app:kspDebugKotlin :app:compileDebugKotlin :app:mergeDebugJavaResource :app:processDebugJavaRes :app:checkDebugAarMetadata :app:generateDebugBuildConfig :app:processDebugResources :app:compileDebugJavaWithJavac :app:processDebugMainManifest; do
             rc=0
             ./gradlew $t --dry-run --console=plain > dry.log 2>&1 || rc=$?
             echo "=== $t rc=$rc ==="
