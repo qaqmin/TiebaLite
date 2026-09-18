@@ -54,7 +54,9 @@ plugins:
   com.autonomousapps.dependency-analysis:
     version: 1.29.0
   com.android.application:
-    version: 8.7.3
+    # AGP 8.7.3 + compileSdk 36 触发 "Cannot query the value of this provider"
+    # (compileDebugJavaWithJavac 依赖解析, 09-18 CI 根因), 回退 8.6.1 规避
+    version: 8.6.1
   org.jetbrains.kotlin.android:
     alias: kotlin-android
     version-ref: kotlin
