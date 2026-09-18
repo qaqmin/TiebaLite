@@ -23,8 +23,10 @@ jobs:
 
       - name: Set up JDK 17
         # setup-java (node) 不走 HTTP_PROXY 且直连 azul 间歇被掐, 改国内镜像 curl 装载
+        # JDK 17.0.2 (2022) 有已知 javac/wiring bug, 换清华 Adoptium 17.0.20.1 (compileDebugJavaWithJavac
+        # 任务图 MissingValueException 的规避尝试 #1)
         run: |
-          curl -sL --retry 3 --max-time 600 -o /tmp/jdk.tar.gz https://mirrors.huaweicloud.com/openjdk/17.0.2/openjdk-17.0.2_linux-x64_bin.tar.gz
+          curl -sL --retry 3 --max-time 600 -o /tmp/jdk.tar.gz https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jdk/x64/linux/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz
           mkdir -p /opt/jdk && tar xzf /tmp/jdk.tar.gz -C /opt/jdk --strip-components=1
           /opt/jdk/bin/java -version
           echo "JAVA_HOME=/opt/jdk" >> "$GITHUB_ENV"
