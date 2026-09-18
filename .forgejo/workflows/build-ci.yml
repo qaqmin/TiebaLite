@@ -43,11 +43,13 @@ jobs:
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
-          ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee build.log | tail -80
+          ./gradlew assembleDebug --stacktrace --info --console=plain 2>&1 | tee build.log | tail -80
           e=${PIPESTATUS[0]}
           if [ $e -ne 0 ]; then
-            echo "===== FAILURE ROOT CAUSE ====="
-            grep -m10 -B3 -A15 "Caused by" build.log || grep -m5 -B5 -A25 "What went wrong" build.log || echo "no marker found"
+            echo "===== FAILURE ROOT CAUSE (What went wrong) ====="
+            grep -m5 "What went wrong" -A30 build.log || true
+            echo "===== Caused by head ====="
+            grep -m3 "Caused by" -B10 build.log | head -60 || true
             echo "===== END ====="
           fi
           exit $e
