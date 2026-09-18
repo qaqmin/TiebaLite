@@ -75,8 +75,20 @@ jobs:
             grep -q "TaskDependencyResolveException" build.log && awk '/TaskDependencyResolveException/{found=1} found{print; n++} n>50{exit}' build.log || echo "not found"
             echo "===== What went wrong 后 60 行 ====="
             grep -q "What went wrong" build.log && awk '/What went wrong/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
+            echo "===== inner Caused by 段 (MissingValue 前后) ====="
+            grep -q "Caused by: org.gradle.api.internal.provider.MissingValueException" build.log && awk '/Caused by: org.gradle.api.internal.provider.MissingValueException/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
           } | tee -a "$GITHUB_STEP_SUMMARY" || true
+          # build.log 全文存为 artifact, 以便排查 inner stack
+          mkdir -p diag && cp build.log diag/ 2>/dev/null || true
           exit $e
+
+      - name: Upload build.log
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-log
+          path: diag/build.log
+          if-no-files-found: ignore
 
       - name: Unit Tests
         run: ./gradlew testDebugUnitTest
