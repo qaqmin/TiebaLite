@@ -11,6 +11,12 @@ plugins {
     autowire(libs.plugins.com.squareup.wire)
 }
 
+// Hilt 聚合任务 hiltJavaCompileDebug 的 provider 在 Codeberg runner 下无值
+// ("Cannot query the value of this provider", 任务图解析失败), 关闭聚合任务规避
+hilt {
+    enableAggregatingTask = false
+}
+
 val sha: String? = System.getenv("GITHUB_SHA")
 val isCI: String? = System.getenv("CI")
 val isSelfBuild = isCI.isNullOrEmpty() || !isCI.equals("true", ignoreCase = true)
