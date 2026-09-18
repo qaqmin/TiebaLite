@@ -45,10 +45,12 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
           ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
-          ./gradlew :app:compileDebugJavaWithJavac --dry-run --console=plain > dryrun.log 2>&1 || echo "dryrun failed"
-          tail -25 help.log | grep -i "FAILURE\|What went wrong\|BUILD" || true
-          echo "--- dryrun tail ---"
-          tail -25 dryrun.log | grep -i "FAILURE\|What went wrong\|BUILD\|Cannot determine" || true
+          for t in :app:kaptGenerateStubsDebugKotlin :app:kspDebugKotlin :app:compileDebugKotlin :app:compileDebugJavaWithJavac; do
+            ./gradlew $t --dry-run --console=plain > dry.log 2>&1
+            rc=$?
+            echo "=== $t rc=$rc ==="
+            grep -i "What went wrong" -A4 dry.log | head -8 || true
+          done
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
           {
