@@ -43,6 +43,12 @@ jobs:
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
+          # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
+          ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
+          ./gradlew :app:compileDebugJavaWithJavac --dry-run --console=plain > dryrun.log 2>&1 || echo "dryrun failed"
+          tail -25 help.log | grep -i "FAILURE\|What went wrong\|BUILD" || true
+          echo "--- dryrun tail ---"
+          tail -25 dryrun.log | grep -i "FAILURE\|What went wrong\|BUILD\|Cannot determine" || true
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
           {
