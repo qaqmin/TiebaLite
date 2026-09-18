@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.huanchengfly.tieba.post.*
 import com.huanchengfly.tieba.post.adapters.ChatBubbleStyleAdapter
@@ -17,19 +16,10 @@ import com.huanchengfly.tieba.post.utils.ThemeUtil
 
 
 class AppFontSizeActivity : BaseActivity() {
-    @BindView(R.id.toolbar)
     lateinit var toolbar: Toolbar
-
-    @BindView(R.id.collapsing_toolbar)
     lateinit var collapsingToolbar: CollapsingToolbarLayout
-
-    @BindView(R.id.app_font_size_seekbar)
     lateinit var seekBar: RulerSeekBar
-
-    @BindView(R.id.app_font_size_text)
     lateinit var sizeText: TextView
-
-    @BindView(R.id.app_font_size_bubbles)
     lateinit var chatBubblesRv: RecyclerView
 
     var oldFontSize: Float = 0f
@@ -50,6 +40,11 @@ class AppFontSizeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        toolbar = findViewById(R.id.toolbar)
+        collapsingToolbar = findViewById(R.id.collapsing_toolbar)
+        seekBar = findViewById(R.id.app_font_size_seekbar)
+        sizeText = findViewById(R.id.app_font_size_text)
+        chatBubblesRv = findViewById(R.id.app_font_size_bubbles)
         ThemeUtil.setTranslucentThemeBackground(this, findViewById(R.id.background))
         setSupportActionBar(toolbar)
         supportActionBar?.apply {

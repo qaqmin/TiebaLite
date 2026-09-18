@@ -3,7 +3,6 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 plugins {
     autowire(libs.plugins.com.android.application)
     autowire(libs.plugins.kotlin.android)
-    autowire(libs.plugins.kotlin.kapt)
     autowire(libs.plugins.kotlin.serialization)
     autowire(libs.plugins.kotlin.parcelize)
     autowire(libs.plugins.kotlin.compose.compiler)
@@ -180,9 +179,9 @@ dependencies {
     api(wire.runtime)
 
     implementation(hilt.android)
-    kapt(hilt.compiler)
+    ksp(hilt.compiler)
     implementation(androidx.hilt.navigation.compose)
-    kapt(androidx.hilt.compiler)
+    ksp(androidx.hilt.compiler)
 
     implementation(accompanist.drawablepainter)
     implementation(accompanist.insets.ui)
@@ -278,9 +277,6 @@ dependencies {
     implementation(com.gyf.immersionbar.immersionbar)
 
     implementation(com.github.yalantis.ucrop)
-
-    implementation(com.jakewharton.butterknife)
-    kapt(com.jakewharton.butterknife.compiler)
 
     implementation(appcenter.analytics)
     implementation(appcenter.crashes)
