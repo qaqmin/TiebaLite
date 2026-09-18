@@ -45,12 +45,14 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1
           e=$?
-          echo "===== GRADLE EXIT: $e ====="
-          grep -n "FAILURE\|What went wrong" build.log | head -5 || true
-          echo "===== What went wrong 头部 ====="
-          awk "/What went wrong/{found=1} found{print; n++} n>60{exit}" build.log || true
-          echo "===== 失败前的最后配置行 ====="
-          grep -n "MissingValueException\|Could not determine" build.log | head -10 || true
+          {
+            echo "===== GRADLE EXIT: $e ====="
+            grep -n "FAILURE\|What went wrong" build.log | head -5 || true
+            echo "===== What went wrong 段 ====="
+            awk "/What went wrong/{found=1} found{print; n++} n>80{exit}" build.log || true
+            echo "===== MissingValue/Could not determine 行 ====="
+            grep -n "MissingValueException\|Could not determine" build.log | head -10 || true
+          } | tee -a "$GITHUB_STEP_SUMMARY" || true
           exit $e
 
       - name: Unit Tests
