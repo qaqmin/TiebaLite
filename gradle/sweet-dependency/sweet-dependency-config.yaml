@@ -34,10 +34,8 @@ versions:
   accompanist: 0.36.0
   appcenter: 5.0.4
   hilt: 2.51.1
-  # Kotlin/KGP 2.0.24 + KSP 2.0.24-1.0.27: 2.0.21 的 kapt→javac 注解处理器路径注入
-  # 在 Codeberg runner 触发 compileDebugJavaWithJavac 任务图 MissingValueException (规避尝试 #2)
-  kotlin: 2.0.24
-  ksp: 2.0.24-1.0.27
+  kotlin: 2.0.21
+  ksp: 2.0.21-1.0.28
   sketch: 3.3.0
   wire: 4.9.3
 
