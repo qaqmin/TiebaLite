@@ -41,20 +41,13 @@ jobs:
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
-          # 本地 runner (Fake-IP 环境) 需走宿主机代理拉 Maven 依赖; 云端 runner 探测不到代理自动跳过
-          # 写进仓库 gradle.properties (gradle 必读, 不依赖 GRADLE_USER_HOME/挂载)
-          if curl -s --max-time 3 -o /dev/null -x http://host.docker.internal:6789 https://repo.maven.apache.org/maven2/; then
-            printf '\nsystemProp.http.proxyHost=host.docker.internal\nsystemProp.http.proxyPort=6789\nsystemProp.https.proxyHost=host.docker.internal\nsystemProp.https.proxyPort=6789\nsystemProp.http.nonProxyHosts=localhost|127.*|host.docker.internal|mirrors.cloud.tencent.com|mirrors.huaweicloud.com|maven.aliyun.com\n' >> gradle.properties
-            grep -c systemProp gradle.properties
-            echo "gradle proxy enabled (local runner detected)"
-          else
-            echo "no local proxy, using direct connection"
-          fi
-          ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee build.log | tail -60
+          # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
+          rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
+          ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee build.log | tail -80
           e=${PIPESTATUS[0]}
           if [ $e -ne 0 ]; then
             echo "===== FAILURE ROOT CAUSE ====="
-            grep -m5 -B2 -A8 "Caused by" build.log || grep -m3 -B3 -A10 "What went wrong" build.log || echo "no marker found"
+            grep -m10 -B3 -A15 "Caused by" build.log || grep -m5 -B5 -A25 "What went wrong" build.log || echo "no marker found"
             echo "===== END ====="
           fi
           exit $e

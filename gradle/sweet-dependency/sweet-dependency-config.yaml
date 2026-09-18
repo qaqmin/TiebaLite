@@ -18,10 +18,14 @@ preferences:
 # Configure repositories used by dependencies
 # 配置依赖使用的存储库
 repositories:
+  # 国内镜像前置 (Codeberg runner 对国际源 TLS 握手间歇被掐: 09-16/17 CI 全红根因), 未命中回落官方源
   gradle-plugin-portal:
     scope: PLUGINS
+    url: https://maven.aliyun.com/repository/gradle-plugin
   google:
+    url: https://maven.aliyun.com/repository/google
   maven-central:
+    url: https://maven.aliyun.com/repository/public
   jit-pack:
   maven-verve:
     url: https://verve.jfrog.io/artifactory/verve-gradle-release/
