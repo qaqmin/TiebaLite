@@ -54,6 +54,10 @@ jobs:
             grep -i "What went wrong" -A4 dry.log | head -8 || true
             grep -i "Caused by" dry.log | head -3 || true
           done
+          echo "===== javac 完整异常链 (build.log 中 TaskDependencyResolveException 段) ====="
+          grep -n -m1 "TaskDependencyResolveException" build.log >/dev/null && awk '/TaskDependencyResolveException/{found=1} found{print; n++} n>40{exit}' build.log || true
+          echo "===== javac --info 依赖解析段 ====="
+          grep -n "compileDebugJavaWithJavac" build.log | grep -i "resolv\|depend\|Selected" | head -10 || true
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
           {
