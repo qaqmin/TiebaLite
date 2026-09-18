@@ -60,13 +60,18 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
           ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
-          for t in :app:kspDebugKotlin :app:compileDebugKotlin :app:mergeDebugJavaResource :app:processDebugJavaRes :app:checkDebugAarMetadata :app:generateDebugBuildConfig :app:processDebugResources :app:compileDebugJavaWithJavac :app:processDebugMainManifest; do
+          for t in :app:compileDebugJavaWithJavac; do
             rc=0
             ./gradlew $t --dry-run --console=plain > dry.log 2>&1 || rc=$?
             echo "=== $t rc=$rc ==="
             grep -i "What went wrong" -A4 dry.log | head -8 || true
             grep -i "Caused by" dry.log | head -3 || true
           done
+          echo "=== 再试 -PnoComposeArgs (跳过 compose compiler 参数) ==="
+          rc=0
+          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoComposeArgs --console=plain > dry2.log 2>&1 || rc=$?
+          echo "=== javac+noComposeArgs rc=$rc ==="
+          grep -i "What went wrong" -A4 dry2.log | head -8 || true
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
           {

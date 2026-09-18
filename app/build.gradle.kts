@@ -126,20 +126,23 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        val composeArgs = listOf(
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
-        )
-        // compose_stability_configuration.txt 被本地 gitignore, CI checkout 后缺失;
-        // 缺文件时插件 Provider 无值 -> "Cannot query the value of this provider" (09-16 CI 全红根因之二)
-        freeCompilerArgs += if (rootDir.resolve("compose_stability_configuration.txt").exists())
-            composeArgs + listOf(
-                "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
-                    project.rootDir.absolutePath + "/compose_stability_configuration.txt"
+        // -P 探针: CI 二分用 -PnoComposeArgs 跳过 compose compiler 参数定位空 provider
+        if (!project.hasProperty("noComposeArgs")) {
+            val composeArgs = listOf(
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
             )
-        else composeArgs
+            // compose_stability_configuration.txt 被本地 gitignore, CI checkout 后缺失;
+            // 缺文件时插件 Provider 无值 -> "Cannot query the value of this provider" (09-16 CI 全红根因之二)
+            freeCompilerArgs += if (rootDir.resolve("compose_stability_configuration.txt").exists())
+                composeArgs + listOf(
+                    "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
+                        project.rootDir.absolutePath + "/compose_stability_configuration.txt"
+                )
+            else composeArgs
+        }
     }
     packaging {
         resources {
