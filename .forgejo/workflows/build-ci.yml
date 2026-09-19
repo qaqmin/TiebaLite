@@ -19,7 +19,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        # runner 拉 actions/checkout 时 data.forgejo.org TLS 间歇被掐致整 job 秒挂 (09-19),
+        # 改纯 git clone, 工作流不再依赖任何 uses: action
+        run: |
+          ok=0
+          for i in 1 2 3; do
+            if git clone --depth 1 --branch "${{ github.ref_name }}" "https://codeberg.org/min09577/TiebaLite.git" .; then
+              ok=1; break
+            fi
+            echo "clone failed (attempt $i), retrying..."
+            rm -rf .git
+            sleep 5
+          done
+          [ $ok -eq 1 ] || { echo "all clone attempts failed"; exit 1; }
+          git log --oneline -1
 
       - name: Set up JDK 17
         # setup-java (node) 不走 HTTP_PROXY 且直连 azul 间歇被掐, 改国内镜像 curl 装载
