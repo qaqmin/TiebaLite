@@ -119,6 +119,9 @@ jobs:
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
+          # CI 侧内存封顶: 共享 runner 内存紧张时 4G daemon 堆易被宿主 OOM killer 杀掉
+          # ("Gradle build daemon disappeared", 09-19 tag run), 追加同名键后者胜出, 本地构建不受影响
+          printf '\norg.gradle.jvmargs=-Xmx2560m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.workers.max=2\nkotlin.daemon.jvmargs=-Xmx1536m\n' >> gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # jitpack.io TLS 握手间歇被掐 (09-19 checkDebugAarMetadata XXPermissions), gradle 级重试
