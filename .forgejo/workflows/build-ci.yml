@@ -60,6 +60,41 @@ jobs:
           done
           which sdkmanager adb aapt2 2>/dev/null | tee -a "$GITHUB_STEP_SUMMARY" || true
 
+      - name: Set up Android SDK
+        # runner 镜像无 SDK: AGP 以 missingSdkDirectory 占位, javac 的 androidJdkImage
+        # file dependency provider 无值 -> "Cannot query the value of this provider" (09-19 根因)
+        # cmdline-tools 走 dl.google.com, 与 JDK 步骤同款重试; license 接受后 AGP 也可自愈补装
+        run: |
+          SDK=/opt/android-sdk
+          command -v unzip >/dev/null 2>&1 || { apt-get update -qq && apt-get install -y -qq unzip; }
+          CTL_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          ok=0
+          for i in 1 2 3; do
+            if curl -sL --max-time 600 -o /tmp/ctl.zip "$CTL_URL" && unzip -tq /tmp/ctl.zip >/dev/null 2>&1; then
+              ok=1; break
+            fi
+            echo "cmdline-tools download failed ($i), retrying..."
+            sleep 5
+          done
+          [ $ok -eq 1 ] || { echo "all cmdline-tools downloads failed"; exit 1; }
+          mkdir -p "$SDK/cmdline-tools"
+          unzip -q /tmp/ctl.zip -d "$SDK/cmdline-tools"
+          mv "$SDK/cmdline-tools/cmdline-tools" "$SDK/cmdline-tools/latest"
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          ok=0
+          for i in 1 2 3; do
+            if "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "platforms;android-36" "build-tools;34.0.0" "platform-tools"; then
+              ok=1; break
+            fi
+            echo "sdkmanager install failed ($i), retrying..."
+            sleep 5
+          done
+          [ $ok -eq 1 ] || { echo "sdkmanager install failed"; exit 1; }
+          ls "$SDK/platforms" "$SDK/build-tools"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
       - name: Generate keystore.properties
         run: |
           printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
