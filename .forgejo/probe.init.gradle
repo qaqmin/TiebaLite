@@ -1,0 +1,73 @@
+// CI 诊断探针: 复刻 javac 任务依赖解析的走查路径, 定位空 provider 所在配置与元凶依赖
+// 用法: ./gradlew help -I .forgejo/probe.init.gradle -PprobeWalk --console=plain
+allprojects { p ->
+    afterEvaluate {
+        if (!gradle.startParameter.projectProperties.containsKey("probeWalk")) return
+        // 嵌套 afterEvaluate: 保证跑在本项目所有 afterEvaluate(含 AGP)之后, 且持有项目状态锁
+        p.afterEvaluate {
+            if (p == gradle.rootProject) return
+            println "PROBE === SDK 状态 ==="
+            ["ANDROID_HOME", "ANDROID_SDK_ROOT"].each {
+                println "PROBE env $it=${System.getenv(it)}"
+            }
+            def sdk = null
+            try {
+                def ext = p.extensions.findByName("android")
+                if (ext != null) sdk = ext.sdkDirectory
+            } catch (Throwable t) {
+                println "PROBE sdkDirectory 查询失败: ${t.class.simpleName}: ${t.message}"
+            }
+            println "PROBE sdkDirectory=$sdk"
+            if (sdk != null && sdk.exists()) {
+                ["platforms", "build-tools", "licenses"].each {
+                    def d = new File(sdk, it)
+                    def names = d.exists() && d.list() != null ? d.list().toList().toString() : "MISSING"
+                    if (names.length() > 300) names = names.substring(0, 300) + "..."
+                    println "PROBE sdk/$it = $names"
+                }
+                def jar = new File(sdk, "platforms/android-36/android.jar")
+                println "PROBE android.jar(platform-36) exists=${jar.exists()} size=${jar.exists() ? jar.length() : '-'}"
+            } else {
+                println "PROBE sdk 目录不存在或未知"
+            }
+            println "PROBE === 逐配置 buildDependencies 走查 ==="
+            p.configurations.each { cfg ->
+                if (!cfg.isCanBeResolved()) return
+                try {
+                    cfg.buildDependencies.getDependencies(null)
+                } catch (Throwable t) {
+                    println "PROBE CFG-FAIL ${cfg.name} extends=[${cfg.extendsFrom.collect { it.name }.join(',')}]: ${t.class.simpleName}: ${String.valueOf(t.message).split('\n')[0]}"
+                    try {
+                        cfg.dependencies.each { d ->
+                            println "PROBE   dep ${d.class.simpleName}: $d"
+                            if (d instanceof org.gradle.api.artifacts.FileCollectionDependency) {
+                                try {
+                                    d.files.each { println "PROBE     item: $it" }
+                                    println "PROBE     (该 file dependency 全部项可解析)"
+                                } catch (Throwable t2) {
+                                    println "PROBE     ITEM-EMPTY: ${t2.class.simpleName}: ${String.valueOf(t2.message).split('\n')[0]}"
+                                }
+                            }
+                        }
+                    } catch (Throwable t3) {
+                        println "PROBE   dep-dump 失败: ${t3.class.simpleName}: ${t3.message}"
+                    }
+                }
+            }
+            println "PROBE === javac 任务输入 ==="
+            def t = p.tasks.findByName("compileDebugJavaWithJavac")
+            if (t != null) {
+                try {
+                    def bc = t.options.bootstrapClasspath
+                    println "PROBE bootstrapClasspath=$bc"
+                    bc.each { println "PROBE   boot item: $it" }
+                } catch (Throwable e) {
+                    println "PROBE boot EMPTY: ${e.class.simpleName}: ${String.valueOf(e.message).split('\n')[0]}"
+                }
+            } else {
+                println "PROBE 无 compileDebugJavaWithJavac 任务"
+            }
+            println "PROBE === 走查结束 ==="
+        }
+    }
+}

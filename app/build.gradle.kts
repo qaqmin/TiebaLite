@@ -160,7 +160,10 @@ android {
             val fileName =
                 "${variant.buildType.name}-${applicationVersionName}(${applicationVersionCode}).apk"
 
-            (this as BaseVariantOutputImpl).outputFileName = fileName
+            // -PnoOutputName 探针: CI 二分用, 跳过 outputFileName 定位空 provider
+            if (!project.hasProperty("noOutputName")) {
+                (this as BaseVariantOutputImpl).outputFileName = fileName
+            }
         }
         // -PnoSrcDir 探针: CI 二分用, 跳过 ksp 生成目录 srcDir 定位空 provider
         if (!project.hasProperty("noSrcDir")) {

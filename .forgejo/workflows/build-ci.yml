@@ -45,6 +45,21 @@ jobs:
           echo "JAVA_HOME=/opt/jdk" >> "$GITHUB_ENV"
           echo "/opt/jdk/bin" >> "$GITHUB_PATH"
 
+      - name: SDK Diagnostics
+        run: |
+          echo "===== SDK 诊断 =====" | tee -a "$GITHUB_STEP_SUMMARY" || true
+          env | grep -i android | tee -a "$GITHUB_STEP_SUMMARY" || echo "(env 无 ANDROID*)" | tee -a "$GITHUB_STEP_SUMMARY"
+          for d in "$ANDROID_HOME" "$ANDROID_SDK_ROOT" /opt/android-sdk /usr/lib/android-sdk /root/Android/Sdk /usr/local/lib/android/sdk /home/runner/Android/Sdk; do
+            if [ -n "$d" ] && [ -d "$d" ]; then
+              echo "--- SDK dir: $d" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "  top: $(ls "$d" 2>/dev/null | tr '\n' ' ' | head -c 300)" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "  platforms: $(ls "$d/platforms" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "  build-tools: $(ls "$d/build-tools" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "  licenses: $(ls "$d/licenses" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          which sdkmanager adb aapt2 2>/dev/null | tee -a "$GITHUB_STEP_SUMMARY" || true
+
       - name: Generate keystore.properties
         run: |
           printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
@@ -60,6 +75,9 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
           ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
+          echo "=== probeWalk 配置走查 (定位空 provider 所在配置与元凶依赖) ==="
+          ./gradlew help -I .forgejo/probe.init.gradle -PprobeWalk --console=plain > probe.log 2>&1 || true
+          grep "^PROBE" probe.log | head -100 | tee -a "$GITHUB_STEP_SUMMARY" || true
           for t in :app:compileDebugJavaWithJavac; do
             rc=0
             ./gradlew $t --dry-run --console=plain > dry.log 2>&1 || rc=$?
@@ -81,7 +99,12 @@ jobs:
           rc=0
           ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoSrcDir --console=plain > dry4.log 2>&1 || rc=$?
           echo "=== javac+noSrcDir rc=$rc ==="
-          grep -i "What went wrong" -A4 dry2.log | head -8 || true
+          grep -i "What went wrong" -A4 dry4.log | head -8 || true
+          echo "=== 再试 -PnoOutputName (跳过 outputFileName) ==="
+          rc=0
+          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoOutputName --console=plain > dry5.log 2>&1 || rc=$?
+          echo "=== javac+noOutputName rc=$rc ==="
+          grep -i "What went wrong" -A4 dry5.log | head -8 || true
           ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
           e=${e:-0}
           {
