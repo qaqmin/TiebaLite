@@ -140,8 +140,14 @@ jobs:
           ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoOutputName --console=plain > dry5.log 2>&1 || rc=$?
           echo "=== javac+noOutputName rc=$rc ==="
           grep -i "What went wrong" -A4 dry5.log | head -8 || true
-          ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 || e=$?
-          e=${e:-0}
+          # jitpack.io TLS 握手间歇被掐 (09-19 checkDebugAarMetadata XXPermissions), gradle 级重试
+          e=1
+          for i in 1 2 3; do
+            ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 && { e=0; break; }
+            e=$?
+            echo "assembleDebug attempt $i failed (rc=$e), retrying..."
+            sleep 10
+          done
           {
             echo "===== GRADLE EXIT: $e ====="
             echo "===== javac 完整异常链 (TaskDependencyResolveException 段) ====="
@@ -159,10 +165,22 @@ jobs:
           exit $e
 
       - name: Unit Tests
-        run: ./gradlew testDebugUnitTest
+        run: |
+          for i in 1 2 3; do
+            ./gradlew testDebugUnitTest --console=plain && break
+            [ "$i" -eq 3 ] && exit 1
+            echo "testDebugUnitTest attempt $i failed, retrying..."
+            sleep 10
+          done
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          for i in 1 2 3; do
+            ./gradlew assembleRelease --console=plain && break
+            [ "$i" -eq 3 ] && exit 1
+            echo "assembleRelease attempt $i failed, retrying..."
+            sleep 10
+          done
 
       - name: Collect APKs
         run: |
