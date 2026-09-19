@@ -30,16 +30,13 @@ if (!isSelfBuild && !sha.isNullOrEmpty()) {
     applicationVersionName += "+${sha.substring(0, 7)}"
 }
 
-// -PnoWire 探针: CI 二分用, 跳过 wire 插件配置定位空 provider 的 file dependency
-if (!project.hasProperty("noWire")) {
-    wire {
-        sourcePath {
-            srcDir("src/main/protos")
-        }
+wire {
+    sourcePath {
+        srcDir("src/main/protos")
+    }
 
-        kotlin {
-            android = true
-        }
+    kotlin {
+        android = true
     }
 }
 
@@ -129,23 +126,20 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        // -P 探针: CI 二分用 -PnoComposeArgs 跳过 compose compiler 参数定位空 provider
-        if (!project.hasProperty("noComposeArgs")) {
-            val composeArgs = listOf(
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
+        val composeArgs = listOf(
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.buildDir.absolutePath + "/compose_metrics"
+        )
+        // compose_stability_configuration.txt 被本地 gitignore, CI checkout 后缺失;
+        // 缺文件时插件 Provider 无值 -> "Cannot query the value of this provider" (09-16 CI 全红根因之二)
+        freeCompilerArgs += if (rootDir.resolve("compose_stability_configuration.txt").exists())
+            composeArgs + listOf(
+                "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
+                    project.rootDir.absolutePath + "/compose_stability_configuration.txt"
             )
-            // compose_stability_configuration.txt 被本地 gitignore, CI checkout 后缺失;
-            // 缺文件时插件 Provider 无值 -> "Cannot query the value of this provider" (09-16 CI 全红根因之二)
-            freeCompilerArgs += if (rootDir.resolve("compose_stability_configuration.txt").exists())
-                composeArgs + listOf(
-                    "-P", "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
-                        project.rootDir.absolutePath + "/compose_stability_configuration.txt"
-                )
-            else composeArgs
-        }
+        else composeArgs
     }
     packaging {
         resources {
@@ -160,17 +154,11 @@ android {
             val fileName =
                 "${variant.buildType.name}-${applicationVersionName}(${applicationVersionCode}).apk"
 
-            // -PnoOutputName 探针: CI 二分用, 跳过 outputFileName 定位空 provider
-            if (!project.hasProperty("noOutputName")) {
-                (this as BaseVariantOutputImpl).outputFileName = fileName
-            }
+            (this as BaseVariantOutputImpl).outputFileName = fileName
         }
-        // -PnoSrcDir 探针: CI 二分用, 跳过 ksp 生成目录 srcDir 定位空 provider
-        if (!project.hasProperty("noSrcDir")) {
-            kotlin.sourceSets {
-                getByName(variant.name) {
-                    kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
-                }
+        kotlin.sourceSets {
+            getByName(variant.name) {
+                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
             }
         }
     }

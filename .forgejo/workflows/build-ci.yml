@@ -108,38 +108,6 @@ jobs:
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
-          # 二分定位: help(纯配置) / dry-run(任务图) / 各子任务
-          ./gradlew help --console=plain > help.log 2>&1 || echo "help failed"
-          echo "=== probeWalk 配置走查 (定位空 provider 所在配置与元凶依赖) ==="
-          ./gradlew help -I .forgejo/probe.init.gradle -PprobeWalk --console=plain > probe.log 2>&1 || true
-          grep "^PROBE" probe.log | head -100 | tee -a "$GITHUB_STEP_SUMMARY" || true
-          for t in :app:compileDebugJavaWithJavac; do
-            rc=0
-            ./gradlew $t --dry-run --console=plain > dry.log 2>&1 || rc=$?
-            echo "=== $t rc=$rc ==="
-            grep -i "What went wrong" -A4 dry.log | head -8 || true
-            grep -i "Caused by" dry.log | head -3 || true
-          done
-          echo "=== 再试 -PnoComposeArgs (跳过 compose compiler 参数) ==="
-          rc=0
-          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoComposeArgs --console=plain > dry2.log 2>&1 || rc=$?
-          echo "=== javac+noComposeArgs rc=$rc ==="
-          grep -i "What went wrong" -A4 dry2.log | head -8 || true
-          echo "=== 再试 -PnoWire (跳过 wire 插件) ==="
-          rc=0
-          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoWire --console=plain > dry3.log 2>&1 || rc=$?
-          echo "=== javac+noWire rc=$rc ==="
-          grep -i "What went wrong" -A4 dry3.log | head -8 || true
-          echo "=== 再试 -PnoSrcDir (跳过 ksp srcDir) ==="
-          rc=0
-          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoSrcDir --console=plain > dry4.log 2>&1 || rc=$?
-          echo "=== javac+noSrcDir rc=$rc ==="
-          grep -i "What went wrong" -A4 dry4.log | head -8 || true
-          echo "=== 再试 -PnoOutputName (跳过 outputFileName) ==="
-          rc=0
-          ./gradlew :app:compileDebugJavaWithJavac --dry-run -PnoOutputName --console=plain > dry5.log 2>&1 || rc=$?
-          echo "=== javac+noOutputName rc=$rc ==="
-          grep -i "What went wrong" -A4 dry5.log | head -8 || true
           # jitpack.io TLS 握手间歇被掐 (09-19 checkDebugAarMetadata XXPermissions), gradle 级重试
           e=1
           for i in 1 2 3; do
@@ -156,6 +124,9 @@ jobs:
             grep -q "What went wrong" build.log && awk '/What went wrong/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
             echo "===== inner Caused by 段 (MissingValue 前后) ====="
             grep -q "Caused by: org.gradle.api.internal.provider.MissingValueException" build.log && awk '/Caused by: org.gradle.api.internal.provider.MissingValueException/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
+            echo "===== javac 编译错误行 ====="
+            grep -aE "\.java:[0-9]+: error" build.log | head -40 || echo "not found"
+            grep -a "error: " build.log | head -20 || true
           } | tee -a "$GITHUB_STEP_SUMMARY" || true
           # build.log 全文 base64 打进 summary (runner 拉 upload-artifact action 时 TLS 间歇被掐,
           # 整个 job 直接失败, 故改纯 shell: 截取关键段已足够, 另存 base64 备查)
