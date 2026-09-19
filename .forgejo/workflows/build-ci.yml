@@ -173,32 +173,60 @@ jobs:
           cp app/build/outputs/apk/release/*.apk apks/ 2>/dev/null || true
           ls -la apks/
 
-      # 自动发布 APK 到 GitHub Release（仅 tag 触发时）
-      - name: Publish to GitHub Release
+      # 自动发布 APK 到 Codeberg Release（仅 tag 触发时）
+      # 旧版用 gh + github.token 打 github.com 是 GitHub 遗产, 在 Forgejo 上必然 401 且 gh 缺失 (09-19 改原生 API)
+      - name: Publish to Codeberg Release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
-          GH_TOKEN: ${{ github.token }}
+          TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.ref_name }}"
-          echo "Deleting old release if exists..."
-          gh release delete "$TAG" --yes 2>/dev/null || true
-          echo "Creating release $TAG..."
-          CN_NOTES="$(python3 -c "import re; text=open('AI_CHANGELOG.md',encoding='utf-8').read(); m=re.search(r'^## '+re.escape('$TAG')+r'[^\n]*\n(.*?)(?=^## )',text,re.S|re.M); sec=m.group(1) if m else ''; m2=re.search(r'### 🇨🇳 中文\n(.*?)(?=^### |\Z)',sec,re.S|re.M); print(m2.group(1).strip() if m2 else '')" || true)"
-          DESC="## $TAG
-
-          ${CN_NOTES}
-
-          ---
-          | APK | 适用场景 |
-          |------|------|
-          | release | 正式使用（已混淆优化，约 10MB） |
-          | debug | 测试调试（保留完整日志） |
-          "
-          gh release create "$TAG" --title "$TAG" --notes "$DESC"
-          echo "Uploading APKs..."
-          gh release upload "$TAG" \
-            app/build/outputs/apk/release/*.apk \
-            --clobber
-          echo "Done!"
+          API="https://codeberg.org/api/v1/repos/min09577/TiebaLite"
+          AUTH="Authorization: token $TOKEN"
+          # 从 AI_CHANGELOG.md 提取该 tag 的中文段落 (文件/段落缺失则用默认文案)
+          NOTES=""
+          if [ -f AI_CHANGELOG.md ]; then
+            NOTES=$(awk -v tag="$TAG" '
+              index($0, "## " tag " ") == 1 || $0 == "## " tag {found=1; next}
+              found && index($0, "## ") == 1 {exit}
+              found {print}
+            ' AI_CHANGELOG.md)
+            CN=$(printf '%s\n' "$NOTES" | awk 'index($0,"### ")==1 && /中文/{found=1; next} index($0,"### ")==1 {found=0} found')
+            [ -z "$CN" ] && CN="$NOTES"
+          fi
+          [ -n "$CN" ] || CN="TiebaLite $TAG 自动构建发布。"
+          PRERELEASE=true
+          case "$TAG" in *-ai*) ;; *) PRERELEASE=false ;; esac
+          esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}'; }
+          BODY="{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"prerelease\":$PRERELEASE,\"draft\":false,\"body\":\"$(esc "$CN")\"}"
+          # 同名 release 已存在则先删 (tag 保留, 与旧 gh delete+create 行为一致)
+          RID=$(curl -sL --max-time 60 -H "$AUTH" "$API/releases/tags/$TAG" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+          if [ -n "$RID" ]; then
+            echo "release $RID already exists for $TAG, deleting..."
+            curl -sL --max-time 60 -X DELETE -H "$AUTH" "$API/releases/$RID"
+          fi
+          ok=0
+          for i in 1 2 3; do
+            RESP=$(curl -sL --max-time 60 -H "$AUTH" -H "Content-Type: application/json" -d "$BODY" "$API/releases")
+            RID=$(printf '%s' "$RESP" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+            [ -n "$RID" ] && { ok=1; break; }
+            echo "create release failed (attempt $i): $(printf '%s' "$RESP" | head -c 200)"
+            sleep 5
+          done
+          [ $ok -eq 1 ] || { echo "release create failed"; exit 1; }
+          echo "release id=$RID"
+          for f in app/build/outputs/apk/release/*.apk app/build/outputs/apk/debug/*.apk; do
+            NAME=$(basename "$f")
+            up_ok=0
+            for i in 1 2 3; do
+              if curl -sL --max-time 600 -H "$AUTH" -F "attachment=@$f" "$API/releases/$RID/assets?name=$NAME" | grep -q '"id"'; then
+                up_ok=1; break
+              fi
+              echo "upload $NAME failed (attempt $i), retrying..."
+              sleep 5
+            done
+            [ $up_ok -eq 1 ] || { echo "upload $NAME failed"; exit 1; }
+          done
+          echo "Done! $API/releases/tag/$TAG"
 
 # runner: codeberg-medium (8G RAM, 10min) # v5
