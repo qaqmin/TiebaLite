@@ -14,13 +14,20 @@ on:
 jobs:
   build:
     # Codeberg 托管 runner 仅 tiny(1C/2G/2min) / small(2C/4G/5min) / medium(4C/8G/10min)
-    # 三档, 没有更大规格 (codeberg.org/actions/meta), -lazy 后缀把时长上限放宽到约 24h.
-    # 本项目一次冷构建实测 >1h, 远超 medium 的 10min guideline, 必须用 lazy.
-    # 注意 8G 额度把磁盘写入一并计入: "用 1G 内存且写了 1G 临时文件按 2G 配额计".
+    # 三档, 没有更大规格 (codeberg.org/actions/meta). -lazy 变体把时长放宽到约 24h, 但取任务
+    # 延迟不可控 (actions/meta#76: 连 codeberg-medium 都出现过排队数小时); medium 的 10min
+    # 只是 guideline 并非硬限制 (本项目 09-19 实测 2h 的 run 未被超时杀掉), 且本仓库历史 run
+    # 在 medium 上均为秒级启动, 故用 medium.
+    # 8G 额度把磁盘写入一并计入: "用 1G 内存且写了 1G 临时文件按 2G 配额计".
     # 09-19/09-20 的 daemon disappeared 尸检全部死于 dex 合并阶段——正是间接写入量最大的
     # 时刻, 即页缓存+JVM 堆顶满 8G 触发宿主 OOM kill, 故本工作流一切步骤都以压缩
     # 总写入量为第一目标 (去掉 --info / 关 build cache / 关 Jetifier / 删安装包).
-    runs-on: codeberg-medium-lazy
+    runs-on: codeberg-medium
+    concurrency:
+      # 同一 ref 只保留最新一次 run: 修 CI 期间连续推送不会在共享队列里堆叠
+      # (Codeberg 明确要求不要占队列), 被顶掉的旧 run 自动取消
+      group: ${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout
