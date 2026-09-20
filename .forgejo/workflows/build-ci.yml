@@ -122,7 +122,9 @@ jobs:
           # CI 侧内存封顶: 共享 runner 内存紧张时 4G daemon 堆易被宿主 OOM killer 杀掉
           # ("Gradle build daemon disappeared"/"Not enough memory", 09-19 tag run)
           # Kotlin 编译改进程内执行, 免去第二个 JVM; 追加同名键后者胜出, 本地构建不受影响
-          printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.workers.max=2\nkotlin.compiler.execution.strategy=in-process\n' >> gradle.properties
+          # 09-20 尸检: daemon 死于 mergeExtDexDebug (D8 dex 合并, 全构建内存峰值最高点),
+          # 编译阶段已扛住. 定向降压: 单 worker + 关并行, dex 不再与编译抢内存
+          printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.workers.max=1\norg.gradle.parallel=false\nkotlin.compiler.execution.strategy=in-process\n' >> gradle.properties
           echo "=== gradle.properties 尾部 (确认内存覆盖生效) ==="
           tail -4 gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
@@ -133,6 +135,8 @@ jobs:
             ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "assembleDebug attempt $i failed (rc=$e), retrying..."
+            # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
+            ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
           done
           {
@@ -165,12 +169,25 @@ jobs:
             sleep 10
           done
 
+      - name: Unit Tests
+        run: |
+          # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 dex/test 在高水位 daemon 里再被 OOM
+          ./gradlew --stop >/dev/null 2>&1 || true
+          for i in 1 2 3; do
+            ./gradlew testDebugUnitTest --console=plain && break
+            [ "$i" -eq 3 ] && exit 1
+            echo "testDebugUnitTest attempt $i failed, retrying..."
+            sleep 10
+          done
+
       - name: Build Release APK
         run: |
+          ./gradlew --stop >/dev/null 2>&1 || true
           for i in 1 2 3; do
             ./gradlew assembleRelease --console=plain && break
             [ "$i" -eq 3 ] && exit 1
             echo "assembleRelease attempt $i failed, retrying..."
+            ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
           done
 
