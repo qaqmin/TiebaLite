@@ -8,19 +8,24 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
+# 不写 permissions: Forgejo 不支持该字段 (Codeberg 每次 run 都告警并整段忽略),
+# 见 docs.codeberg.org/ci — 发布步骤用 github.token (= forgejo.token) 即可
 
 jobs:
   build:
-    runs-on: codeberg-medium
-    env:
-      HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
+    # Codeberg 托管 runner 仅 tiny(1C/2G/2min) / small(2C/4G/5min) / medium(4C/8G/10min)
+    # 三档, 没有更大规格 (codeberg.org/actions/meta), -lazy 后缀把时长上限放宽到约 24h.
+    # 本项目一次冷构建实测 >1h, 远超 medium 的 10min guideline, 必须用 lazy.
+    # 注意 8G 额度把磁盘写入一并计入: "用 1G 内存且写了 1G 临时文件按 2G 配额计".
+    # 09-19/09-20 的 daemon disappeared 尸检全部死于 dex 合并阶段——正是间接写入量最大的
+    # 时刻, 即页缓存+JVM 堆顶满 8G 触发宿主 OOM kill, 故本工作流一切步骤都以压缩
+    # 总写入量为第一目标 (去掉 --info / 关 build cache / 关 Jetifier / 删安装包).
+    runs-on: codeberg-medium-lazy
 
     steps:
       - name: Checkout
         # runner 拉 actions/checkout 时 data.forgejo.org TLS 间歇被掐致整 job 秒挂 (09-19),
-        # 改纯 git clone, 工作流不再依赖任何 uses: action
+        # 改纯 git clone; Forgejo 无 GitHub marketplace, 本工作流不依赖任何 uses: action
         run: |
           ok=0
           for i in 1 2 3; do
@@ -54,24 +59,11 @@ jobs:
           done
           [ $ok -eq 1 ] || { echo "all JDK mirrors failed"; exit 1; }
           mkdir -p /opt/jdk && tar xzf /tmp/jdk.tar.gz -C /opt/jdk --strip-components=1
+          # 安装包留着纯占写入额度, 解压完即删
+          rm -f /tmp/jdk.tar.gz
           /opt/jdk/bin/java -version
           echo "JAVA_HOME=/opt/jdk" >> "$GITHUB_ENV"
           echo "/opt/jdk/bin" >> "$GITHUB_PATH"
-
-      - name: SDK Diagnostics
-        run: |
-          echo "===== SDK 诊断 =====" | tee -a "$GITHUB_STEP_SUMMARY" || true
-          env | grep -i android | tee -a "$GITHUB_STEP_SUMMARY" || echo "(env 无 ANDROID*)" | tee -a "$GITHUB_STEP_SUMMARY"
-          for d in "$ANDROID_HOME" "$ANDROID_SDK_ROOT" /opt/android-sdk /usr/lib/android-sdk /root/Android/Sdk /usr/local/lib/android/sdk /home/runner/Android/Sdk; do
-            if [ -n "$d" ] && [ -d "$d" ]; then
-              echo "--- SDK dir: $d" | tee -a "$GITHUB_STEP_SUMMARY"
-              echo "  top: $(ls "$d" 2>/dev/null | tr '\n' ' ' | head -c 300)" | tee -a "$GITHUB_STEP_SUMMARY"
-              echo "  platforms: $(ls "$d/platforms" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
-              echo "  build-tools: $(ls "$d/build-tools" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
-              echo "  licenses: $(ls "$d/licenses" 2>/dev/null | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
-            fi
-          done
-          which sdkmanager adb aapt2 2>/dev/null | tee -a "$GITHUB_STEP_SUMMARY" || true
 
       - name: Set up Android SDK
         # runner 镜像无 SDK: AGP 以 missingSdkDirectory 占位, javac 的 androidJdkImage
@@ -107,91 +99,109 @@ jobs:
           echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
           echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          # 安装包与 apt 索引同样纯占额度, 一并清掉
+          rm -f /tmp/ctl.zip
+          rm -rf /var/lib/apt/lists/*
 
       - name: Generate keystore.properties
         run: |
           printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
 
-      - name: Verify keystore.properties
-        run: ls -la keystore.properties && cat keystore.properties
-
-      - name: Build Debug APK
+      - name: Tune Gradle for Codeberg runner
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
-          # CI 侧内存封顶: 共享 runner 内存紧张时 4G daemon 堆易被宿主 OOM killer 杀掉
-          # ("Gradle build daemon disappeared"/"Not enough memory", 09-19 tag run)
-          # Kotlin 编译改进程内执行, 免去第二个 JVM; 追加同名键后者胜出, 本地构建不受影响
-          # 09-20 尸检: daemon 死于 mergeExtDexDebug (D8 dex 合并, 全构建内存峰值最高点),
-          # 编译阶段已扛住. 定向降压: 单 worker + 关并行, dex 不再与编译抢内存
-          printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.workers.max=1\norg.gradle.parallel=false\nkotlin.compiler.execution.strategy=in-process\n' >> gradle.properties
-          echo "=== gradle.properties 尾部 (确认内存覆盖生效) ==="
-          tail -4 gradle.properties
+          # CI 侧内存/磁盘封顶. 追加同名键后者胜出 (Gradle 取最后一次定义), 本地构建不受影响.
+          #   -Xmx3072m          单 daemon 堆封顶; 共享 runner 8G 额度下 4G 堆易被宿主 OOM killer
+          #                      杀掉 ("Gradle build daemon disappeared", 09-19 tag run)
+          #   workers.max=1      单 worker, dex 不再与编译抢内存 (09-20 尸检: daemon 死于
+          #                      mergeExtDexDebug, D8 dex 合并是全构建内存峰值最高点)
+          #   parallel=false     同上, 任务图不再并发
+          #   in-process         Kotlin 编译改进程内执行, 免去 fork 第二个 JVM (宿主机无余量时
+          #                      fork 直接 Not enough memory)
+          #   caching=false      CI 每次冷启动, build cache 命中率≈0, 写入是净开销 (且计入 8G 额度)
+          #   Jetifier=false     全 AndroidX, 无 com.android.support 依赖 (本地 modules 缓存 0 命中),
+          #                      Jetifier 会把每个 AAR 再变换复制一份, 磁盘 CPU 双浪费
+          printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.workers.max=1\norg.gradle.parallel=false\norg.gradle.caching=false\nkotlin.compiler.execution.strategy=in-process\nandroid.enableJetifier=false\n' >> gradle.properties
+          echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
+          tail -8 gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
-          # jitpack.io TLS 握手间歇被掐 (09-19 checkDebugAarMetadata XXPermissions), gradle 级重试
+          # wrapper 解包后会保留 ~226MB 的发行版 zip (.ok 标记在, 删掉不会触发重下),
+          # 先 --version 把它拉下来, 立刻删 zip
+          ./gradlew --version >/dev/null 2>&1 || true
+          find "${HOME:-/root}/.gradle/wrapper/dists" -maxdepth 3 -name '*.zip' -delete 2>/dev/null || true
+
+      - name: Build APK
+        # 分支/PR 只编 debug (无 R8, 最快最省); tag 只编 release (发布产物), 两者互斥 —
+        # 09-20 的 tag run 在一个 job 里先后编 debug+release, 写入量直接翻倍顶满 8G 额度
+        run: |
+          case "${{ github.ref }}" in
+            refs/tags/*) TASK=assembleRelease ;;
+            *)           TASK=assembleDebug  ;;
+          esac
+          echo "=== $TASK (ref=${{ github.ref }}) ==="
+          # 不用 --info: 它会把 build.log 写到数百 MB (计入磁盘额度) 且显著拖慢构建;
+          # 下面 Dump 步骤所需的所有段在默认 lifecycle 日志 + --stacktrace 下都能取到
           e=1
           for i in 1 2 3; do
-            ./gradlew assembleDebug --stacktrace --info --console=plain > build.log 2>&1 && { e=0; break; }
+            ./gradlew "$TASK" --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
-            echo "assembleDebug attempt $i failed (rc=$e), retrying..."
+            echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
             ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
           done
+          exit $e
+
+      - name: Unit Tests
+        # tag run 只保证发布产物可编出, 测试放到分支/PR 上跑 (省一次完整编译+测试的写入量)
+        run: |
+          case "${{ github.ref }}" in
+            refs/tags/*) echo "tag build, skipping unit tests"; exit 0 ;;
+          esac
+          # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 test 在高水位 daemon 里再被 OOM
+          ./gradlew --stop >/dev/null 2>&1 || true
+          for i in 1 2 3; do
+            ./gradlew testDebugUnitTest --no-build-cache --console=plain && break
+            [ "$i" -eq 3 ] && exit 1
+            echo "testDebugUnitTest attempt $i failed, retrying..."
+            ./gradlew --stop >/dev/null 2>&1 || true
+            sleep 10
+          done
+
+      - name: Dump build diagnostics
+        # 任何前面步骤失败即执行; build.log 在同一 job 的步骤间保留
+        if: failure()
+        run: |
+          [ -f build.log ] || { echo "(no build.log — 失败发生在构建之前)"; exit 0; }
           {
-            echo "===== GRADLE EXIT: $e ====="
-            echo "===== javac 完整异常链 (TaskDependencyResolveException 段) ====="
-            grep -q "TaskDependencyResolveException" build.log && awk '/TaskDependencyResolveException/{found=1} found{print; n++} n>50{exit}' build.log || echo "not found"
+            echo "===== build.log 行数 ====="
+            grep -c "" build.log || true
             echo "===== What went wrong 后 60 行 ====="
             grep -q "What went wrong" build.log && awk '/What went wrong/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
+            echo "===== daemon 死亡迹象 (OOM/被杀) ====="
+            grep -aE "daemon disappeared|Not enough memory|Killed|OutOfMemoryError|GC overhead limit" build.log | head -20 || echo "not found"
+            echo "===== TaskDependencyResolveException 段 ====="
+            grep -q "TaskDependencyResolveException" build.log && awk '/TaskDependencyResolveException/{found=1} found{print; n++} n>50{exit}' build.log || echo "not found"
             echo "===== inner Caused by 段 (MissingValue 前后) ====="
             grep -q "Caused by: org.gradle.api.internal.provider.MissingValueException" build.log && awk '/Caused by: org.gradle.api.internal.provider.MissingValueException/{found=1} found{print; n++} n>60{exit}' build.log || echo "not found"
             echo "===== javac 编译错误行 ====="
             grep -aE "\.java:[0-9]+: error" build.log | head -40 || echo "not found"
             grep -a "error: " build.log | head -20 || true
-            echo "===== 死前最后 12 个任务 (定位 daemon 死亡点) ====="
+            echo "===== 最后 12 个已执行任务 (定位 daemon 死亡点) ====="
             grep -a "> Task" build.log | tail -12 || echo "not found"
+            echo "===== FAILED 任务 ====="
+            grep -aE "> Task .* FAILED|FAILURE:" build.log | head -20 || echo "not found"
           } | tee -a "$GITHUB_STEP_SUMMARY" || true
-          # build.log 全文 base64 打进 summary (runner 拉 upload-artifact action 时 TLS 间歇被掐,
-          # 整个 job 直接失败, 故改纯 shell: 截取关键段已足够, 另存 base64 备查)
-          echo '```' >> "$GITHUB_STEP_SUMMARY" || true
-          grep -c "" build.log >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY" || true
-          exit $e
-
-      - name: Unit Tests
-        run: |
-          for i in 1 2 3; do
-            ./gradlew testDebugUnitTest --console=plain && break
-            [ "$i" -eq 3 ] && exit 1
-            echo "testDebugUnitTest attempt $i failed, retrying..."
-            sleep 10
-          done
-
-      - name: Unit Tests
-        run: |
-          # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 dex/test 在高水位 daemon 里再被 OOM
-          ./gradlew --stop >/dev/null 2>&1 || true
-          for i in 1 2 3; do
-            ./gradlew testDebugUnitTest --console=plain && break
-            [ "$i" -eq 3 ] && exit 1
-            echo "testDebugUnitTest attempt $i failed, retrying..."
-            sleep 10
-          done
 
       - name: Build Release APK
-        run: |
-          ./gradlew --stop >/dev/null 2>&1 || true
-          for i in 1 2 3; do
-            ./gradlew assembleRelease --console=plain && break
-            [ "$i" -eq 3 ] && exit 1
-            echo "assembleRelease attempt $i failed, retrying..."
-            ./gradlew --stop >/dev/null 2>&1 || true
-            sleep 10
-          done
+        # 兼容保留: release 已并入上面的 Build APK 步骤 (tag 时编 release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "release APK 已在 Build APK 步骤中编出"
 
       - name: Collect APKs
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p apks
           cp app/build/outputs/apk/debug/*.apk apks/ 2>/dev/null || true
@@ -241,6 +251,8 @@ jobs:
           [ $ok -eq 1 ] || { echo "release create failed"; exit 1; }
           echo "release id=$RID"
           for f in app/build/outputs/apk/release/*.apk app/build/outputs/apk/debug/*.apk; do
+            # 只编了 release 时 debug glob 不会展开, 原样传字面量给 curl 会失败, 需跳过
+            [ -f "$f" ] || continue
             NAME=$(basename "$f")
             up_ok=0
             for i in 1 2 3; do
@@ -253,5 +265,3 @@ jobs:
             [ $up_ok -eq 1 ] || { echo "upload $NAME failed"; exit 1; }
           done
           echo "Done! $API/releases/tag/$TAG"
-
-# runner: codeberg-medium (8G RAM, 10min) # v5
