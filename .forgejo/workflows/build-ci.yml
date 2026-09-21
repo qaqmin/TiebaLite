@@ -175,10 +175,20 @@ jobs:
             ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
           done
-          # 产物清点: run #273 release 构建成功但 Collect 步骤两手空空, 此处落日志定位
-          echo "=== 产物清点 (pwd=$(pwd)) ==="
-          ls -la app/build/outputs/apk/ 2>/dev/null || echo "(无 app/build/outputs/apk/ 目录)"
-          find app/build/outputs -type f -name "*.apk" -exec ls -la {} + 2>/dev/null || echo "(app/build/outputs 下无 APK 文件)"
+          # 产物清点: run #273/#280 均出现"构建 success 但 app/build/outputs 无 APK",
+          # 这里全量落诊断 (runner 日志流偶有丢失, 故每项都 tee 到独立文件共存档)
+          {
+            echo "=== 产物清点 (pwd=$(pwd)) ==="
+            ls -la app/build/ 2>/dev/null || echo "(无 app/build/ 目录)"
+            echo "--- 全工作区 APK 搜索 ---"
+            find . -path ./.git -prune -o -name "*.apk" -print 2>/dev/null | head -10 || true
+            echo "--- build.log BUILD 行 ---"
+            grep -aE "BUILD (SUCCESSFUL|FAILED)" build.log || echo "(无 BUILD 行)"
+            echo "--- build.log 任务清单尾 15 行 ---"
+            grep -a "> Task" build.log | tail -15 || echo "(无任务行)"
+            echo "--- dry-run: assembleRelease 关键任务状态 ---"
+            ./gradlew :app:assembleRelease --dry-run --console=plain 2>&1 | grep -aE ":app:(packageRelease|assembleRelease|minifyReleaseWithR8)" | head -5 || true
+          } 2>&1 | tee build_inventory.txt
           exit $e
 
       - name: Unit Tests
@@ -231,15 +241,19 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p apks
-          # 不假设输出目录结构: 全树搜索 APK 再复制.
-          # run #273 在此处两手空空 (apks/ 为空但 Build APK 显示 success) —
-          # 旧写法用固定 glob 且 2>/dev/null || true 把失败全吞了, 改为找不到就响亮失败.
-          find app/build/outputs -type f -name "*.apk" -exec cp -t apks/ {} + 2>/dev/null || true
+          # 全工作区搜索 APK (不假设输出目录): run #273/#280 均出现"构建 success 但
+          # app/build/outputs 无 APK"的怪状, 先扩大搜索面保证发布不因路径假设而漏;
+          # 找不到就响亮失败并打印全树供定位.
+          find . -path ./.git -prune -o -name "*.apk" -print 2>/dev/null | while IFS= read -r f; do
+            cp "$f" apks/ && echo "collected: $f"
+          done
           echo "=== apks/ 内容 ==="
           ls -la apks/
           if [ -z "$(ls -A apks/ 2>/dev/null)" ]; then
-            echo "::error::未收集到任何 APK — app/build/outputs 全树文件如下:"
-            find app/build/outputs -type f 2>/dev/null | head -40
+            echo "::error::未收集到任何 APK — 全工作区搜索结果为空"
+            find . -path ./.git -prune -o -type f -name "*.apk" -print 2>/dev/null | head -20
+            echo "--- app/build 顶层 ---"
+            ls -la app/build/ 2>/dev/null | head -20
             exit 1
           fi
 
