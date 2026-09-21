@@ -19,13 +19,17 @@ jobs:
     # 只是 guideline 并非硬限制 (本项目 09-19 实测 2h 的 run 未被超时杀掉), 且本仓库历史 run
     # 在 medium 上均为秒级启动, 故用 medium.
     # 8G 额度把磁盘写入一并计入: "用 1G 内存且写了 1G 临时文件按 2G 配额计".
-    # 另有一条 2 小时任务硬超时 (run #259/#260/#261/#267 均停在整 2h, #261/#267 的 Build 步骤
-    # 分别 1h59m15s / 1h57m53s), 所以"构建够快"和"构建够轻"同样是被硬约束的:
-    #   - 轻: 09-19/09-20 的 daemon disappeared 尸检死于 dex 合并阶段——彼时间接写入量最大
-    #     的时刻, 页缓存+JVM 堆顶满 8G 触发宿主 OOM kill, 故本工作流一切步骤都以压缩
-    #     总写入量为第一目标 (去掉 --info / 关 build cache / 关 Jetifier / 删安装包)
-    #   - 快: 09-20 曾用 workers.max=1+parallel=false 压内存, 反而把构建拖到撞 2h 超时;
-    #     run #251 证明并行配置下全流程仅 22 分钟, 故恢复并行, 内存安全靠上面的写入削减兜底
+    # 2h 任务硬超时 (run #260/#261 均停在整 2h 被杀; #267 三次 attempt 全败于 1h59m).
+    # 09-21 尸检 (run #267 完整日志 + run #268 截断日志): daemon 死于 compileDebugKotlin,
+    # 报 "Gradle build daemon disappeared unexpectedly"——即 cgroup OOM kill, 不是构建错误.
+    # 真凶是 kotlin.compiler.execution.strategy=in-process: Kotlin 编译器挤进 Gradle daemon
+    # 同一个 JVM, 编译期两套数据结构的存活集叠加, 峰值 RSS 顶爆 8G 额度被宿主 SIGKILL.
+    # 对照实验: run #251 用项目默认配置 (Kotlin 独立 daemon + 并行 + build cache 开) 22 分钟
+    # 全绿; 而内存砍半的 #267 (3072m + workers.max=1 + in-process) 反而三连跪——
+    # 证明"降压"方向错了, 该恢复的是"两个 JVM 分工"而非"一个 JVM 硬扛".
+    # 本工作流的策略因此回到 #251 验证过的配置, 只加一道保险: kotlin.daemon 限堆 2048m
+    # (KGP 默认让 Kotlin daemon 继承 org.gradle.jvmargs 的 -Xmx4096m, 两个 4G 堆的 JVM
+    # 同时驻留时额度余量太薄; 本地实测编译峰值仅 ~1.5G, 2048m 有 35% 余量).
     runs-on: codeberg-medium
     concurrency:
       # 同一 ref 只保留最新一次 run: 修 CI 期间连续推送不会在共享队列里堆叠
@@ -122,23 +126,16 @@ jobs:
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
-          # CI 侧内存/磁盘封顶. 追加同名键后者胜出 (Gradle 取最后一次定义), 本地构建不受影响.
-          #   -Xmx4096m          daemon 堆恢复 4096m: 09-20 曾降到 3072m+单 worker, 结果构建被拖慢到
-          #                      撞 2h 硬超时 (run #261/#267 均停在 1h58m 左右), 而 run #251 用
-          #                      4096m+并行 22 分钟即全绿; dex 合并实际需要这个量级
-          #   parallel=true     恢复并行 (workers 默认=CPU 数 4). 单模块项目下 workers.max=1 会把
-          #                      AGP 的 Worker API 任务也串行化, 是拖慢的主因
-          #   caching=false      CI 每次冷启动, build cache 命中率≈0, 写入是净开销 (且计入 8G 额度)
-          #   in-process         Kotlin 编译改进程内执行, 免去 fork 第二个 JVM (宿主机无余量时
-          #                      fork 直接 Not enough memory)
-          #   Jetifier=false     全 AndroidX, 无 com.android.support 依赖 (本地 modules 缓存 0 命中),
-          #                      Jetifier 会把每个 AAR 再变换复制一份, 磁盘 CPU 双浪费
-          # 上面的磁盘侧削减 (无 --info / 无 build cache / 无 Jetifier / 单 variant / 删安装包)
-          # 是 4096m 堆能活下来的前提: 09-20 run #265 正是带着 --info+jitpack 变换+build cache
-          # 的页缓存顶满 8G 在 dex 阶段被宿主杀掉, run #267 削减后已能撑过该阶段.
-          printf '\norg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\norg.gradle.parallel=true\norg.gradle.caching=false\nkotlin.compiler.execution.strategy=in-process\nandroid.enableJetifier=false\n' >> gradle.properties
+          # 唯一的 CI 侧覆盖: Kotlin daemon 限堆 2048m.
+          # 09-21 尸检结论: run #267/#268 的 daemon 死于 compileDebugKotlin 的 cgroup OOM
+          # (Kotlin 编译器与 Gradle 挤在同一 JVM, in-process 策略是败因). KGP 默认让
+          # Kotlin daemon 继承 org.gradle.jvmargs 的 -Xmx4096m, 两个 4G 堆 JVM 同时驻留
+          # 会把 8G 额度顶爆; 本地实测编译峰值 ~1.5G, 限 2048m 留 35% 余量.
+          # 其余键 (jvmargs/parallel/caching/Jetifier/执行策略) 一律沿用项目
+          # gradle.properties  defaults —— 即 run #251 22 分钟全绿的配置, 不再覆盖.
+          printf '\nkotlin.daemon.jvmargs=-Xmx2048m\n' >> gradle.properties
           echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
-          tail -8 gradle.properties
+          tail -3 gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # wrapper 解包后会保留 ~226MB 的发行版 zip (.ok 标记在, 删掉不会触发重下),
@@ -156,10 +153,13 @@ jobs:
           esac
           echo "=== $TASK (ref=${{ github.ref }}) ==="
           # 不用 --info: 它会把 build.log 写到数百 MB (计入磁盘额度) 且显著拖慢构建;
-          # 下面 Dump 步骤所需的所有段在默认 lifecycle 日志 + --stacktrace 下都能取到
+          # 下面 Dump 步骤所需的所有段在默认 lifecycle 日志 + --stacktrace 下都能取到.
+          # 不传 --no-build-cache: 项目默认 caching=true. 冷启动首次 attempt 无命中,
+          # 但失败重试时 attempt 2/3 可直接复用 attempt 1 已写出的缓存条目, 少编译=
+          # 少内存峰值 (daemon 三连跪的败因正是编译期内存, 见步骤上方注释).
           e=1
           for i in 1 2 3; do
-            ./gradlew "$TASK" --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
+            ./gradlew "$TASK" --stacktrace --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
@@ -177,7 +177,7 @@ jobs:
           # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 test 在高水位 daemon 里再被 OOM
           ./gradlew --stop >/dev/null 2>&1 || true
           for i in 1 2 3; do
-            ./gradlew testDebugUnitTest --no-build-cache --console=plain && break
+            ./gradlew testDebugUnitTest --console=plain && break
             [ "$i" -eq 3 ] && exit 1
             echo "testDebugUnitTest attempt $i failed, retrying..."
             ./gradlew --stop >/dev/null 2>&1 || true
