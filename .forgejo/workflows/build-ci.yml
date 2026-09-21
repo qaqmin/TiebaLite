@@ -179,6 +179,10 @@ jobs:
             ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
           done
+          # 产物清点: run #273 release 构建成功但 Collect 步骤两手空空, 此处落日志定位
+          echo "=== 产物清点 (pwd=$(pwd)) ==="
+          ls -la app/build/outputs/apk/ 2>/dev/null || echo "(无 app/build/outputs/apk/ 目录)"
+          find app/build/outputs -type f -name "*.apk" -exec ls -la {} + 2>/dev/null || echo "(app/build/outputs 下无 APK 文件)"
           exit $e
 
       - name: Unit Tests
@@ -231,9 +235,17 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p apks
-          cp app/build/outputs/apk/debug/*.apk apks/ 2>/dev/null || true
-          cp app/build/outputs/apk/release/*.apk apks/ 2>/dev/null || true
+          # 不假设输出目录结构: 全树搜索 APK 再复制.
+          # run #273 在此处两手空空 (apks/ 为空但 Build APK 显示 success) —
+          # 旧写法用固定 glob 且 2>/dev/null || true 把失败全吞了, 改为找不到就响亮失败.
+          find app/build/outputs -type f -name "*.apk" -exec cp -t apks/ {} + 2>/dev/null || true
+          echo "=== apks/ 内容 ==="
           ls -la apks/
+          if [ -z "$(ls -A apks/ 2>/dev/null)" ]; then
+            echo "::error::未收集到任何 APK — app/build/outputs 全树文件如下:"
+            find app/build/outputs -type f 2>/dev/null | head -40
+            exit 1
+          fi
 
       # 自动发布 APK 到 Codeberg Release（仅 tag 触发时）
       # 旧版用 gh + github.token 打 github.com 是 GitHub 遗产, 在 Forgejo 上必然 401 且 gh 缺失 (09-19 改原生 API)
@@ -259,31 +271,38 @@ jobs:
           [ -n "$CN" ] || CN="TiebaLite $TAG 自动构建发布。"
           PRERELEASE=true
           case "$TAG" in *-ai*) ;; *) PRERELEASE=false ;; esac
-          esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}'; }
-          BODY="{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"prerelease\":$PRERELEASE,\"draft\":false,\"body\":\"$(esc "$CN")\"}"
-          # 同名 release 已存在则先删 (tag 保留, 与旧 gh delete+create 行为一致)
-          RID=$(curl -sL --max-time 60 -H "$AUTH" "$API/releases/tags/$TAG" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+          # JSON body 用 python3 单行构造: sed/awk 手工转义反斜杠/引号/中文从未在 Linux 上
+          # 验证过 (Publish 步骤此前从未成功执行), 转义错一个字符整个 release body 就废了.
+          # (多行 python -c 会撞 YAML 块标量缩进, 故压成一行)
+          BODY=$(TAG="$TAG" PRERELEASE="$PRERELEASE" CN="$CN" python3 -c 'import json,os; print(json.dumps({"tag_name":os.environ["TAG"],"name":os.environ["TAG"],"prerelease":os.environ["PRERELEASE"]=="true","draft":False,"body":os.environ["CN"]},ensure_ascii=False))')
+          # 步骤运行在 bash -e -o pipefail 下: 管道里 grep 无匹配会以 1 退出, 命令替换的
+          # 失败直接触发 set -e 杀脚本 (run #273 的 Publish 就这样 1 秒静默退出).
+          # 故所有 (curl|grep|head|cut) 命令替换一律加 || true.
+          # 查同名 release (不存在时 404, grep 无匹配 → 必须容错)
+          RID=$(curl -sL --max-time 60 -H "$AUTH" "$API/releases/tags/$TAG" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || true)
           if [ -n "$RID" ]; then
             echo "release $RID already exists for $TAG, deleting..."
-            curl -sL --max-time 60 -X DELETE -H "$AUTH" "$API/releases/$RID"
+            curl -sL --max-time 60 -X DELETE -H "$AUTH" "$API/releases/$RID" || true
           fi
           ok=0
           for i in 1 2 3; do
-            RESP=$(curl -sL --max-time 60 -H "$AUTH" -H "Content-Type: application/json" -d "$BODY" "$API/releases")
-            RID=$(printf '%s' "$RESP" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+            RESP=$(curl -sL --max-time 60 -H "$AUTH" -H "Content-Type: application/json" -d "$BODY" "$API/releases" || true)
+            RID=$(printf '%s' "$RESP" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || true)
             [ -n "$RID" ] && { ok=1; break; }
             echo "create release failed (attempt $i): $(printf '%s' "$RESP" | head -c 200)"
             sleep 5
           done
           [ $ok -eq 1 ] || { echo "release create failed"; exit 1; }
           echo "release id=$RID"
-          for f in app/build/outputs/apk/release/*.apk app/build/outputs/apk/debug/*.apk; do
+          for f in apks/*.apk; do
             # 只编了 release 时 debug glob 不会展开, 原样传字面量给 curl 会失败, 需跳过
             [ -f "$f" ] || continue
             NAME=$(basename "$f")
+            # 版本名带 +sha 后缀: + 在 URL 查询串里会被解码成空格, 必须百分号编码
+            NAME_ENC=$(printf '%s' "$NAME" | sed 's/+/%2B/g; s/ /%20/g; s/(/%28/g; s/)/%29/g')
             up_ok=0
             for i in 1 2 3; do
-              if curl -sL --max-time 600 -H "$AUTH" -F "attachment=@$f" "$API/releases/$RID/assets?name=$NAME" | grep -q '"id"'; then
+              if curl -sL --max-time 600 -H "$AUTH" -F "attachment=@$f" "$API/releases/$RID/assets?name=$NAME_ENC" | grep -q '"id"'; then
                 up_ok=1; break
               fi
               echo "upload $NAME failed (attempt $i), retrying..."
