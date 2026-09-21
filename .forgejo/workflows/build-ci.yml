@@ -27,9 +27,9 @@ jobs:
     # 对照实验: run #251 用项目默认配置 (Kotlin 独立 daemon + 并行 + build cache 开) 22 分钟
     # 全绿; 而内存砍半的 #267 (3072m + workers.max=1 + in-process) 反而三连跪——
     # 证明"降压"方向错了, 该恢复的是"两个 JVM 分工"而非"一个 JVM 硬扛".
-    # 本工作流的策略因此回到 #251 验证过的配置, 只加一道保险: kotlin.daemon 限堆 2048m
-    # (KGP 默认让 Kotlin daemon 继承 org.gradle.jvmargs 的 -Xmx4096m, 两个 4G 堆的 JVM
-    # 同时驻留时额度余量太薄; 本地实测编译峰值仅 ~1.5G, 2048m 有 35% 余量).
+    # 本工作流的策略因此回到 #251 验证过的配置, 只按 ref 分流加堆保险 (见 Tune 步骤):
+    # 分支/PR 编 debug, Kotlin daemon 限 2048m (#269 全绿); tag 编 release, 双 daemon
+    # 各 3072m (#270 实测 release 编译在 2048m 下 OOM, 3072m/3072m 本地全链路验证通过).
     runs-on: codeberg-medium
     concurrency:
       # 同一 ref 只保留最新一次 run: 修 CI 期间连续推送不会在共享队列里堆叠
@@ -126,16 +126,29 @@ jobs:
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
-          # 唯一的 CI 侧覆盖: Kotlin daemon 限堆 2048m.
-          # 09-21 尸检结论: run #267/#268 的 daemon 死于 compileDebugKotlin 的 cgroup OOM
-          # (Kotlin 编译器与 Gradle 挤在同一 JVM, in-process 策略是败因). KGP 默认让
-          # Kotlin daemon 继承 org.gradle.jvmargs 的 -Xmx4096m, 两个 4G 堆 JVM 同时驻留
-          # 会把 8G 额度顶爆; 本地实测编译峰值 ~1.5G, 限 2048m 留 35% 余量.
-          # 其余键 (jvmargs/parallel/caching/Jetifier/执行策略) 一律沿用项目
-          # gradle.properties  defaults —— 即 run #251 22 分钟全绿的配置, 不再覆盖.
-          printf '\nkotlin.daemon.jvmargs=-Xmx2048m\n' >> gradle.properties
+          # CI 侧仅覆盖 Kotlin daemon 堆, 且按 ref 分流 (追加同名键后者胜出):
+          #   分支/PR (debug): kotlin.daemon -Xmx2048m — run #269 全绿配置, 不再动.
+          #     09-21 尸检: run #267/#268 的 daemon 死于 compileDebugKotlin 的 cgroup OOM,
+          #     真凶是 kotlin.compiler.execution.strategy=in-process (Kotlin 编译器与 Gradle
+          #     挤同一 JVM). KGP 默认让 Kotlin daemon 继承 org.gradle.jvmargs 的 -Xmx4096m,
+          #     两个 4G 堆 JVM 同时驻留会顶爆 8G 额度; 本地实测 debug 编译峰值 ~1.5G.
+          #   tag (release): 双 daemon 均 3072m — run #270 实测 release 编译在 2048m 堆下
+          #     OOM ("OutOfMemoryError: Java heap space" → "Not enough memory to run
+          #     compilation"), 而本地完整 assembleRelease (compile+R8 fullMode+lintVital
+          #     +package) 在 3072m/3072m 下 11 分钟全过; 压低 Gradle daemon 堆给 Kotlin
+          #     daemon 腾额度, 编译期双 JVM 峰值 ~6.5G, 留出页缓存余量.
+          # 其余键 (parallel/caching/Jetifier/执行策略) 一律沿用项目 gradle.properties
+          # defaults —— 即 run #251 22 分钟全绿的配置, 不再覆盖.
+          case "${{ github.ref }}" in
+            refs/tags/*)
+              printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx3072m\n' >> gradle.properties
+              ;;
+            *)
+              printf '\nkotlin.daemon.jvmargs=-Xmx2048m\n' >> gradle.properties
+              ;;
+          esac
           echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
-          tail -3 gradle.properties
+          tail -5 gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # wrapper 解包后会保留 ~226MB 的发行版 zip (.ok 标记在, 删掉不会触发重下),
