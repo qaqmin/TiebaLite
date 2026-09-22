@@ -148,6 +148,10 @@ jobs:
             *)
               # 3072m 组合 (#283) 未通过验证, 回退 #269/#271 全绿配置
               printf '\nkotlin.daemon.jvmargs=-Xmx2048m\n' >> gradle.properties
+              # workers.max=1: #291 三次 attempt 的 gradle daemon 都被宿主 OOM kill
+              # (attempt 2/3 只活 1.5-2 分钟), 序列化任务执行砍掉与两个 daemon 并行的
+              # javac 等 worker JVM 峰值; 代价是构建变慢, 分支路径 2h 额度内可容纳
+              printf '\norg.gradle.workers.max=1\n' >> gradle.properties
               ;;
           esac
           echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
