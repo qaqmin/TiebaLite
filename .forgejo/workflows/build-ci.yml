@@ -130,10 +130,11 @@ jobs:
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
           # CI 侧按 ref 分流覆盖 daemon 堆 (追加同名键后者胜出) — 09-21 多轮尸检结论:
-          #   分支/PR (debug): Kotlin daemon 3072m, Gradle daemon 沿用项目默认 4096m.
-          #     debug 的 dex 合并 (mergeExtDexDebug) 吃 daemon 堆, 2048m 下 run #281
-          #     Build APK 三连败; 4096m 下 #269/#271/#274 构建步骤全过. Kotlin daemon
-          #     2048m 时 Unit Tests 的重编译会 OOM (#274), 故提到 3072m.
+          #   分支/PR (debug): 构建步 Gradle daemon 沿用项目默认 4096m (dex 合并需要,
+          #     #281 证明 2048m 不够) + Kotlin daemon 2048m — #269/#271 两次全绿验证过
+          #     的最轻组合 (6.1G 堆总承诺)。#283 曾试 4096m+3072m (7.2G), attempt 2 在
+          #     构建第 38 分钟 (dex 合并附近的内存峰值段) 暴毙, 疑似双 daemon 堆承诺
+          #     顶爆 8G 额度 (内存+磁盘写入合计), 故回退。测试步另配 (见 Unit Tests)。
           #   tag (release): Gradle daemon 2048m + Kotlin daemon 4096m.
           #     run #280 实测: release 编译期 Kotlin daemon 启动/堆提交是 8G 额度瓶颈,
           #     压低 Gradle daemon (RSS ~2.4G) 给 Kotlin daemon 让路后构建 29m4s 成功;
@@ -144,7 +145,8 @@ jobs:
               printf '\norg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
               ;;
             *)
-              printf '\nkotlin.daemon.jvmargs=-Xmx3072m\n' >> gradle.properties
+              # 3072m 组合 (#283) 未通过验证, 回退 #269/#271 全绿配置
+              printf '\nkotlin.daemon.jvmargs=-Xmx2048m\n' >> gradle.properties
               ;;
           esac
           echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
@@ -177,6 +179,12 @@ jobs:
             ./gradlew "$TASK" --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "$TASK attempt $i failed (rc=$e), retrying..."
+            # 失败即诊断: runner 日志流会丢输出 (#281 的 attempt 2/3 回显整段丢失),
+            # 每个 attempt 失败时立刻把 build.log 关键段回显, 不等最后全败的 Dump 步骤
+            echo "----- build.log 尾 40 行 (attempt $i) -----"
+            tail -40 build.log 2>/dev/null || echo "(无 build.log)"
+            echo "----- What went wrong 段 (attempt $i) -----"
+            awk '/What went wrong/{f=1} f{print; n++} n>40{exit}' build.log 2>/dev/null || echo "(无该段)"
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
             ./gradlew --stop >/dev/null 2>&1 || true
             sleep 10
@@ -205,6 +213,12 @@ jobs:
           esac
           # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 test 在高水位 daemon 里再被 OOM
           ./gradlew --stop >/dev/null 2>&1 || true
+          # 测试步换 #280 验证过的 "小 Gradle daemon + 大 Kotlin daemon" 组合:
+          # 测试步的内存峰值是 compileDebugKotlin 重编译 (#274 证明 kotlin 2048m 会被
+          # 突破), 而 8G 额度下 Gradle daemon 4096m + kotlin 3072m 的 7.2G 承诺正是
+          # #283 attempt 2 的疑似死因; 压低 Gradle daemon (测试无 dex 合并, 不吃 daemon
+          # 堆) 给 kotlin 4096m 让路, 复刻 #280 (gradle 2048m + kotlin 4096m) 全绿组合
+          printf '\norg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
           for i in 1 2 3; do
             ./gradlew testDebugUnitTest --no-build-cache --console=plain && break
             [ "$i" -eq 3 ] && exit 1
