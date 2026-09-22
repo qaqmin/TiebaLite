@@ -134,7 +134,8 @@ jobs:
           #     #281 证明 2048m 不够) + Kotlin daemon 2048m — #269/#271 两次全绿验证过
           #     的最轻组合 (6.1G 堆总承诺)。#283 曾试 4096m+3072m (7.2G), attempt 2 在
           #     构建第 38 分钟 (dex 合并附近的内存峰值段) 暴毙, 疑似双 daemon 堆承诺
-          #     顶爆 8G 额度 (内存+磁盘写入合计), 故回退。测试步另配 (见 Unit Tests)。
+          #     顶爆 8G 额度 (内存+磁盘写入合计), 故回退。单元测试与构建同一次 gradle
+          #     调用 (见 Build APK), 不做任何步间属性变更以免编译失效重跑。
           #   tag (release): Gradle daemon 2048m + Kotlin daemon 4096m.
           #     run #280 实测: release 编译期 Kotlin daemon 启动/堆提交是 8G 额度瓶颈,
           #     压低 Gradle daemon (RSS ~2.4G) 给 Kotlin daemon 让路后构建 29m4s 成功;
@@ -159,12 +160,18 @@ jobs:
           find "${HOME:-/root}/.gradle/wrapper/dists" -maxdepth 3 -name '*.zip' -delete 2>/dev/null || true
 
       - name: Build APK
-        # 分支/PR 只编 debug (无 R8, 最快最省); tag 只编 release (发布产物), 两者互斥 —
-        # 09-20 的 tag run 在一个 job 里先后编 debug+release, 写入量直接翻倍顶满 8G 额度
+        # 分支/PR 编 debug + 跑单元测试 (同一次 gradle 调用!); tag 只编 release (发布
+        # 产物), 两者互斥 — 09-20 的 tag run 在一个 job 里先后编 debug+release, 写入量
+        # 直接翻倍顶满 8G 额度。
+        # 测试必须与构建同一次调用: 拆成独立步骤并改 kotlin.daemon.jvmargs 会令编译
+        # 任务输入失效, 测试步被迫重编译 compileDebugKotlin — #287 attempt 2 与 #290
+        # 三次 attempt (mergeDebugResources 中间文件损坏 / SweetDependency 半成品
+        # accessor / OOM) 全死在该形态; 同一次调用下编译只做一次, 无步间属性变更、
+        # 无 daemon 重启、无跨步增量状态问题。
         run: |
           case "${{ github.ref }}" in
             refs/tags/*) TASK=assembleRelease ;;
-            *)           TASK=assembleDebug  ;;
+            *)           TASK="assembleDebug testDebugUnitTest" ;;
           esac
           echo "=== $TASK (ref=${{ github.ref }}) ==="
           # 不用 --info: 它会把 build.log 写到数百 MB (计入磁盘额度) 且显著拖慢构建;
@@ -174,9 +181,11 @@ jobs:
           # 缓存恢复在该 runner 上不可靠; 关掉缓存让每个任务真实执行并写出产物, 顺带
           # 减少写入量 (缓存条目本身也占磁盘额度). 依赖缓存 (~/.gradle/caches/modules-2)
           # 不受影响, 重试仍能免去重复下载.
+          # 注意 $TASK 不加引号: 分支路径它是 "assembleDebug testDebugUnitTest" 两个
+          # 任务名, 加引号会被当成单个任务名.
           e=1
           for i in 1 2 3; do
-            ./gradlew "$TASK" --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
+            ./gradlew $TASK --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 失败即诊断: runner 日志流会丢输出 (#281 的 attempt 2/3 回显整段丢失),
@@ -187,6 +196,9 @@ jobs:
             awk '/What went wrong/{f=1} f{print; n++} n>40{exit}' build.log 2>/dev/null || echo "(无该段)"
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
             ./gradlew --stop >/dev/null 2>&1 || true
+            # 并清半成品 accessor: #290 attempt 2 复用 attempt 1 失败留下的
+            # "Generated class ... not found" 根因; Tune 步只清理一次, 重试前必须再清
+            rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
             sleep 10
           done
           # 产物清点: run #273/#280 均出现"构建 success 但 app/build/outputs 无 APK",
@@ -205,27 +217,10 @@ jobs:
           } 2>&1 | tee build_inventory.txt
           exit $e
 
-      - name: Unit Tests
-        # tag run 只保证发布产物可编出, 测试放到分支/PR 上跑 (省一次完整编译+测试的写入量)
-        run: |
-          case "${{ github.ref }}" in
-            refs/tags/*) echo "tag build, skipping unit tests"; exit 0 ;;
-          esac
-          # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 test 在高水位 daemon 里再被 OOM
-          ./gradlew --stop >/dev/null 2>&1 || true
-          # 测试步换 #280 验证过的 "小 Gradle daemon + 大 Kotlin daemon" 组合:
-          # 测试步的内存峰值是 compileDebugKotlin 重编译 (#274 证明 kotlin 2048m 会被
-          # 突破), 而 8G 额度下 Gradle daemon 4096m + kotlin 3072m 的 7.2G 承诺正是
-          # #283 attempt 2 的疑似死因; 压低 Gradle daemon (测试无 dex 合并, 不吃 daemon
-          # 堆) 给 kotlin 4096m 让路, 复刻 #280 (gradle 2048m + kotlin 4096m) 全绿组合
-          printf '\norg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
-          for i in 1 2 3; do
-            ./gradlew testDebugUnitTest --no-build-cache --console=plain && break
-            [ "$i" -eq 3 ] && exit 1
-            echo "testDebugUnitTest attempt $i failed, retrying..."
-            ./gradlew --stop >/dev/null 2>&1 || true
-            sleep 10
-          done
+      # 单元测试已并入 Build APK 步骤的同一次 gradle 调用 (分支/PR 路径) —
+      # 拆步 + 改 kotlin.daemon.jvmargs 会令编译任务输入失效被迫重编译, #287/#290
+      # 实测三次 attempt 全死于该形态 (含两个与内存无关的机械性死法);
+      # tag 路径不需要测试.
 
       - name: Dump build diagnostics
         # 任何前面步骤失败即执行; build.log 在同一 job 的步骤间保留
