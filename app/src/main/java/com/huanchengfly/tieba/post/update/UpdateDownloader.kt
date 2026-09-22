@@ -2,7 +2,6 @@ package com.huanchengfly.tieba.post.update
 
 import android.util.Log
 import com.huanchengfly.tieba.post.BuildConfig
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -12,35 +11,63 @@ import java.security.DigestOutputStream
 import java.security.MessageDigest
 
 /**
- * 更新元数据拉取 + APK 下载。只用 HttpURLConnection（无 token，匿名访问 GitHub API），
+ * 更新检查平台来源（用户可在关于页选择，DataStore 持久化）。
+ * 主构建线在 Codeberg，GitHub 为镜像/备用：任一端发了新版本都应能检测到。
+ */
+enum class UpdateOrigin {
+    CODEBERG,
+    GITHUB
+}
+
+/** 默认平台来源：Codeberg（当前主构建线）。 */
+val DEFAULT_ORIGIN = UpdateOrigin.CODEBERG
+
+/**
+ * 更新元数据拉取 + APK 下载。只用 HttpURLConnection（无 token，匿名访问 Releases API），
  * debug 构建允许通过系统属性覆盖 API 根地址用于本地 mock。
  */
 object UpdateDownloader {
 
     private const val TAG = "UpdateDownloader"
 
+    private const val CODEBERG_API_ROOT = "https://codeberg.org/api/v1/repos/min09577/TiebaLite"
+
     private const val GITHUB_API_ROOT = "https://api.github.com/repos/min09577/TiebaLite"
 
-    /** 更新检查默认 API 根地址（GitHub，仅 min09577/TiebaLite Releases）。 */
-    const val DEFAULT_API_ROOT = GITHUB_API_ROOT
+    /**
+     * 各平台 Releases API 根地址。Gitea/Forgejo 的 release/asset 字段名与 GitHub 一致
+     * （tag_name/name/html_url/body/prerelease/assets[].browser_download_url），
+     * 解析与下载逻辑两端通用，只有根地址不同。
+     */
+    fun rootFor(origin: UpdateOrigin): String = when (origin) {
+        UpdateOrigin.CODEBERG -> CODEBERG_API_ROOT
+        UpdateOrigin.GITHUB -> GITHUB_API_ROOT
+    }
+
+    /** 另一平台来源（启动检查主渠道失败时静默回退用）。 */
+    fun otherOrigin(origin: UpdateOrigin): UpdateOrigin = when (origin) {
+        UpdateOrigin.CODEBERG -> UpdateOrigin.GITHUB
+        UpdateOrigin.GITHUB -> UpdateOrigin.CODEBERG
+    }
 
     /** debug 构建可覆盖的 API 根地址（本地 mock 用），release 恒为官方地址。 */
     val apiRoot: String
         get() = if (BuildConfig.DEBUG) {
-            System.getProperty("tieba.update.apiRoot") ?: GITHUB_API_ROOT
+            System.getProperty("tieba.update.apiRoot") ?: rootFor(DEFAULT_ORIGIN)
         } else {
-            GITHUB_API_ROOT
+            rootFor(DEFAULT_ORIGIN)
         }
 
     /**
-     * stable 通道端点：GitHub 语义上的最新非预发布 release。
-     * App 侧二次校验 tag 含 -ai. 则剔除（真实数据下 releases/latest 对 ai 预发布返回
-     * prerelease=false，该护栏仍是 stable/ai 通道分离的最后防线）。
+     * stable 通道端点：recent releases 中筛"非预发布且非 ai tag"取版本最大者。
+     * 不用 /releases/latest：Codeberg (Forgejo) 的 latest 语义排除 prerelease，
+     * 平台只有预发布时该端点 404（v4.0.0-ai.51 发布时实测）；列表筛选两端行为一致。
+     * App 侧仍二次剔除 ai tag（GitHub 的 ai release prerelease=false，只按
+     * isPrerelease 筛会漏，该护栏是 stable/ai 通道分离的最后防线）。
      */
     fun fetchStableRelease(root: String = apiRoot): GitHubRelease? {
-        val json = httpGet("${root.trimEnd('/')}/releases/latest") ?: return null
-        val release = GitHubRelease.fromJson(JSONObject(json)) ?: return null
-        return if (release.isAiTag) null else release
+        val json = httpGet("${root.trimEnd('/')}/releases?per_page=10") ?: return null
+        return pickLatestStable(GitHubRelease.fromJsonArray(json))
     }
 
     /**
@@ -151,6 +178,26 @@ object UpdateDownloader {
 fun pickLatestAi(candidates: List<GitHubRelease>): GitHubRelease? {
     return candidates.asSequence()
         .filter { it.isAiTag }
+        .mapNotNull { release ->
+            VersionCompat.parse(release.tagName)?.let { release to it }
+        }
+        .maxWithOrNull(
+            compareBy({ it.second.base }, { it.second.preReleaseVer ?: 0 })
+        )
+        ?.first
+}
+
+/**
+ * stable 通道候选集选版（生产侧纯函数，可 JVM 单测），判据与 [pickLatestAi] 镜像：
+ * 1. 剔除 prerelease（两平台正式版均为非预发布；Codeberg 的 ai release 是 prerelease=true，
+ *    仅靠 isPrerelease 剔除会在 GitHub 侧漏掉 prerelease=false 的 ai tag）；
+ * 2. 剔除 ai tag；
+ * 3. tag 解析失败的剔除；
+ * 4. base 优先排序取最大：base 高者恒胜，preVer 仅在同 base 内比较。
+ */
+fun pickLatestStable(candidates: List<GitHubRelease>): GitHubRelease? {
+    return candidates.asSequence()
+        .filter { !it.isPrerelease && !it.isAiTag }
         .mapNotNull { release ->
             VersionCompat.parse(release.tagName)?.let { release to it }
         }

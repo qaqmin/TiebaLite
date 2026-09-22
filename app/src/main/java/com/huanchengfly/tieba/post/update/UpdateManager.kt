@@ -91,21 +91,39 @@ class UpdateManager @Inject constructor(
      * debug 构建专用：本地 mock 的 API 根地址覆盖。MainActivityV2 从启动 intent extra
      * （tieba.update.mock / tieba.update.mockRoot，仅 debug 生效）读取后经 [check] 的
      * mockRoot/enableMock 注入；未传覆盖值时回落到 gradle 注入的 MOCK_UPDATE_API_ROOT。
-     * 显式开关 mockUpdateEnabled：true 时 debug 构建走 mock 源；默认 false 走真实 GitHub，
-     * 保证 debug 构建的日常更新检查/真机验证走真实链路（mock 只在验收时打开）。
+     * 显式开关 mockUpdateEnabled：true 时 debug 构建走 mock 源；默认 false 走官方来源
+     * （用户选择的平台，默认 Codeberg），保证 debug 构建的日常更新检查/真机验证走真实
+     * 链路（mock 只在验收时打开）。
      */
     private var mockApiRoot: String? = null
     private var mockUpdateEnabled: Boolean = false
 
-    private fun apiRoot(): String {
-        if (BuildConfig.DEBUG && mockUpdateEnabled) {
-            mockApiRoot?.takeIf { it.isNotBlank() }?.let { return it }
-            // gradle buildConfigField 的 debug mock 源（release 恒为空串，永不进 release 路径）
-            if (BuildConfig.MOCK_UPDATE_API_ROOT.isNotBlank()) {
-                return BuildConfig.MOCK_UPDATE_API_ROOT
-            }
+    /** 用户选择的更新检查平台来源（关于页设置，DataStore 持久化，默认 Codeberg）。 */
+    private val _origin = MutableStateFlow(DEFAULT_ORIGIN)
+    val origin: StateFlow<UpdateOrigin> = _origin.asStateFlow()
+
+    init {
+        scope.launch { _origin.value = loadOrigin() }
+    }
+
+    /** debug mock 覆盖地址；未启用 mock 时返回 null，由 [fetchLatest] 按平台来源取官方地址。 */
+    private fun mockRootOverride(): String? {
+        if (!BuildConfig.DEBUG || !mockUpdateEnabled) return null
+        mockApiRoot?.takeIf { it.isNotBlank() }?.let { return it }
+        return BuildConfig.MOCK_UPDATE_API_ROOT.takeIf { it.isNotBlank() }
+    }
+
+    /**
+     * 按平台来源拉取最新 release；稳定/ai 通道由本地版本号决定（同现有逻辑）。
+     * mock 覆盖（debug）优先于一切。
+     */
+    private fun fetchLatest(origin: UpdateOrigin): GitHubRelease? {
+        val root = mockRootOverride() ?: UpdateDownloader.rootFor(origin)
+        return if (VersionCompat.channelOf(BuildConfig.VERSION_NAME) == UpdateChannel.AI) {
+            UpdateDownloader.fetchLatestAiRelease(root)
+        } else {
+            UpdateDownloader.fetchStableRelease(root)
         }
-        return UpdateDownloader.DEFAULT_API_ROOT
     }
 
     fun check(source: UpdateSource, mockRoot: String? = null, enableMock: Boolean = false) {
@@ -115,6 +133,8 @@ class UpdateManager @Inject constructor(
         }
         if (!checking.compareAndSet(false, true)) return
         scope.launch {
+            val origin = loadOrigin()
+            _origin.value = origin
             try {
                 if (source == UpdateSource.STARTUP &&
                     System.currentTimeMillis() - lastCheckTime() < CHECK_INTERVAL_MS
@@ -122,18 +142,25 @@ class UpdateManager @Inject constructor(
                     return@launch
                 }
                 _state.value = UpdateUiState.Checking(source)
-                val root = apiRoot()
-                val release = if (VersionCompat.channelOf(BuildConfig.VERSION_NAME) == UpdateChannel.AI) {
-                    UpdateDownloader.fetchLatestAiRelease(root)
-                } else {
-                    UpdateDownloader.fetchStableRelease(root)
+                var release = fetchLatest(origin)
+                if (release == null && source == UpdateSource.STARTUP) {
+                    // 主渠道失败时静默回退备用渠道：任一端发了新版本都能检测到。
+                    // 手动检查不回退——失败要可见（错误信息带渠道名），便于排查。
+                    release = fetchLatest(UpdateDownloader.otherOrigin(origin))
                 }
                 if (release == null) {
                     // 网络瞬断/接口失败：不写 lastCheckTime，避免 6h 节流把下次启动检查也静默屏蔽
                     _state.value = when (source) {
                         // 启动检查失败静默，不打扰
                         UpdateSource.STARTUP -> UpdateUiState.Idle
-                        UpdateSource.MANUAL -> UpdateUiState.Failed(context.getString(R.string.text_update_check_failed), source)
+                        // 手动检查不回退备用渠道，失败信息带渠道名，便于用户自查/反馈
+                        UpdateSource.MANUAL -> UpdateUiState.Failed(
+                            context.getString(
+                                R.string.text_update_check_failed_with_origin,
+                                originLabel(origin)
+                            ),
+                            source
+                        )
                     }
                     return@launch
                 }
@@ -255,6 +282,30 @@ class UpdateManager @Inject constructor(
         }.getOrDefault(false)
     }
 
+    /**
+     * 切换更新检查平台来源（关于页设置，持久化；下次检查即生效）。
+     */
+    fun setOrigin(origin: UpdateOrigin) {
+        scope.launch {
+            context.dataStore.edit { it[KEY_ORIGIN] = origin.name }
+            _origin.value = origin
+        }
+    }
+
+    /** 读取持久化的平台来源；未设置或解析失败回落 [DEFAULT_ORIGIN]。 */
+    private suspend fun loadOrigin(): UpdateOrigin {
+        return runCatching {
+            context.dataStore.data.first()[KEY_ORIGIN]
+                ?.let { runCatching { UpdateOrigin.valueOf(it) }.getOrNull() }
+        }.getOrNull() ?: DEFAULT_ORIGIN
+    }
+
+    /** 平台来源展示名（专有名词，各语言一致）。 */
+    private fun originLabel(origin: UpdateOrigin): String = when (origin) {
+        UpdateOrigin.CODEBERG -> "Codeberg"
+        UpdateOrigin.GITHUB -> "GitHub"
+    }
+
     private suspend fun lastCheckTime(): Long {
         return runCatching {
             context.dataStore.data.first()[KEY_LAST_CHECK] ?: 0L
@@ -278,5 +329,8 @@ class UpdateManager @Inject constructor(
 
         private val KEY_LAST_CHECK = longPreferencesKey("update_last_check_time")
         private val KEY_IGNORED_TAG = stringPreferencesKey("update_ignored_tag")
+
+        /** 更新检查平台来源（[UpdateOrigin.name]，默认 Codeberg）。 */
+        private val KEY_ORIGIN = stringPreferencesKey("update_origin")
     }
 }
