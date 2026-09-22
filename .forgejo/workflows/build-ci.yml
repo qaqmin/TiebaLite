@@ -27,12 +27,12 @@ jobs:
     # 对照实验: run #251 用项目默认配置 (Kotlin 独立 daemon + 并行 + build cache 开) 22 分钟
     # 全绿; 而内存砍半的 #267 (3072m + workers.max=1 + in-process) 反而三连跪——
     # 证明"降压"方向错了, 该恢复的是"两个 JVM 分工"而非"一个 JVM 硬扛".
-    # 本工作流的策略回到 #251 验证过的项目默认配置 (parallel/caching/Jetifier 不动),
-    # 只统一覆盖两个 daemon 的堆 (见 Tune 步骤): Gradle daemon 2048m + Kotlin daemon
-    # 4096m — 09-21 多轮尸检证明 release 编译期两个 JVM 的总提交量是 8G 额度的瓶颈,
-    # "高压 Gradle daemon + 低压 Kotlin daemon" 的各种组合 (#270/#277) 均边界抖动,
-    # 压低 daemon、放宽 Kotlin daemon 是唯一在本地全链路 (release 全链 + debug+测试)
-    # 验证过的组合.
+    # 本工作流回到 #251 验证过的项目默认配置 (parallel/caching 标志不动), 仅按 ref
+    # 分流微调两个 daemon 的堆 (见 Tune 步骤): 分支/PR (debug) 保 Gradle daemon 4096m
+    # (dex 合并需要) + Kotlin daemon 3072m; tag (release) 压 Gradle daemon 2048m +
+    # Kotlin daemon 4096m (给编译期 Kotlin daemon 的启动/提交让出 8G 额度).
+    # 另传 --no-build-cache: #273/#280 的"成功但产物不落盘"均出自 from-cache 快速
+    # attempt, 关缓存换取每个任务真实执行、产物确定落盘.
     runs-on: codeberg-medium
     concurrency:
       # 同一 ref 只保留最新一次 run: 修 CI 期间连续推送不会在共享队列里堆叠
@@ -129,20 +129,24 @@ jobs:
         run: |
           sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|' gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl gradle/wrapper/gradle-wrapper.properties
-          # CI 侧统一覆盖两个 daemon 的堆上限 (追加同名键后者胜出):
-          #   org.gradle.jvmargs -Xmx2048m   Gradle daemon 只给 2G: 09-21 实测 release
-          #     编译期 Kotlin daemon 的启动/堆提交会顶爆 8G 额度 (run #270/#277 三连跪,
-          #     报 "Not enough memory to run compilation" / daemon startup 即死; 同为
-          #     3072m+3072m 的 #273 却成功过 — 属容器总内存压力下的边界抖动). daemon 压到
-          #     2G 后 RSS ~2.4G, 给 Kotlin daemon 留出 ~5G 提交空间. 本地实测: 完整
-          #     assembleRelease (compile+R8 fullMode+shrinkRes+lintVital+package) 与
-          #     assembleDebug+testDebugUnitTest (46 tasks) 在 2048m daemon 下均通过 —
-          #     即 D8/R8/lint 在 2G daemon 里都够用, "dex 合并需要 4G" 是旧 in-process
-          #     配置下的误判.
-          #   kotlin.daemon.jvmargs -Xmx4096m   Kotlin daemon 放宽到 4G: release 编译
-          #     实测突破 2048m/3072m (run #270 OOM@2048m, #277 OOM@3072m), 而 KGP 默认
-          #     让它继承 org.gradle.jvmargs — 不显式覆盖时它会跟着 daemon 一起变, 故显式钉死.
-          printf '\norg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
+          # CI 侧按 ref 分流覆盖 daemon 堆 (追加同名键后者胜出) — 09-21 多轮尸检结论:
+          #   分支/PR (debug): Kotlin daemon 3072m, Gradle daemon 沿用项目默认 4096m.
+          #     debug 的 dex 合并 (mergeExtDexDebug) 吃 daemon 堆, 2048m 下 run #281
+          #     Build APK 三连败; 4096m 下 #269/#271/#274 构建步骤全过. Kotlin daemon
+          #     2048m 时 Unit Tests 的重编译会 OOM (#274), 故提到 3072m.
+          #   tag (release): Gradle daemon 2048m + Kotlin daemon 4096m.
+          #     run #280 实测: release 编译期 Kotlin daemon 启动/堆提交是 8G 额度瓶颈,
+          #     压低 Gradle daemon (RSS ~2.4G) 给 Kotlin daemon 让路后构建 29m4s 成功;
+          #     本地完整 assembleRelease (compile+R8+shrinkRes+lintVital+package) 在该
+          #     组合下验证通过.
+          case "${{ github.ref }}" in
+            refs/tags/*)
+              printf '\norg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
+              ;;
+            *)
+              printf '\nkotlin.daemon.jvmargs=-Xmx3072m\n' >> gradle.properties
+              ;;
+          esac
           echo "=== gradle.properties 尾部 (确认覆盖生效) ==="
           tail -5 gradle.properties
           # 网络中断会留下半成品 accessor, 复用后报 "Generated class ... not found" (09-17 CI 根因之二)
@@ -163,12 +167,14 @@ jobs:
           echo "=== $TASK (ref=${{ github.ref }}) ==="
           # 不用 --info: 它会把 build.log 写到数百 MB (计入磁盘额度) 且显著拖慢构建;
           # 下面 Dump 步骤所需的所有段在默认 lifecycle 日志 + --stacktrace 下都能取到.
-          # 不传 --no-build-cache: 项目默认 caching=true. 冷启动首次 attempt 无命中,
-          # 但失败重试时 attempt 2/3 可直接复用 attempt 1 已写出的缓存条目, 少编译=
-          # 少内存峰值 (daemon 三连跪的败因正是编译期内存, 见步骤上方注释).
+          # 传 --no-build-cache: run #273/#280 两次"构建 success 但产物没落盘"都发生在
+          # 大量任务 FROM-CACHE 的快速 attempt 上 (15-24min, 快于真实全量构建), 疑似
+          # 缓存恢复在该 runner 上不可靠; 关掉缓存让每个任务真实执行并写出产物, 顺带
+          # 减少写入量 (缓存条目本身也占磁盘额度). 依赖缓存 (~/.gradle/caches/modules-2)
+          # 不受影响, 重试仍能免去重复下载.
           e=1
           for i in 1 2 3; do
-            ./gradlew "$TASK" --stacktrace --console=plain > build.log 2>&1 && { e=0; break; }
+            ./gradlew "$TASK" --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
@@ -200,7 +206,7 @@ jobs:
           # 每步之间杀 daemon: 释放上一步累积的堆内存, 避免 test 在高水位 daemon 里再被 OOM
           ./gradlew --stop >/dev/null 2>&1 || true
           for i in 1 2 3; do
-            ./gradlew testDebugUnitTest --console=plain && break
+            ./gradlew testDebugUnitTest --no-build-cache --console=plain && break
             [ "$i" -eq 3 ] && exit 1
             echo "testDebugUnitTest attempt $i failed, retrying..."
             ./gradlew --stop >/dev/null 2>&1 || true
