@@ -160,7 +160,9 @@ jobs:
           rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
           # wrapper 解包后会保留 ~226MB 的发行版 zip (.ok 标记在, 删掉不会触发重下),
           # 先 --version 把它拉下来, 立刻删 zip
-          ./gradlew --version >/dev/null 2>&1 || true
+          # timeout 兜底: 本 runner 上 gradle 进程会无限挂死不再返回 (09-23 实测三次,
+          # 详见 Build APK 步骤注释), 到点杀掉不让 Tune 步骤无限陪葬
+          timeout 300 ./gradlew --version >/dev/null 2>&1 || true
           find "${HOME:-/root}/.gradle/wrapper/dists" -maxdepth 3 -name '*.zip' -delete 2>/dev/null || true
 
       - name: Build APK
@@ -189,7 +191,15 @@ jobs:
           # 任务名, 加引号会被当成单个任务名.
           e=1
           for i in 1 2 3; do
-            ./gradlew $TASK --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
+            # timeout 兜底: 09-23 在 242b52be 上实测三次 gradle 无限挂死不再返回——
+          #   #294: attempt 1 jitpack TLS 失败后卡在 attempt 间的 --stop, 70min+ 无进展 (手动取消);
+          #   #295: attempt 1 依赖解析期静默挂死, Build APK 步骤跑满 1h7m22s 后整 job 判 failure;
+          #   #296: attempt 2 BUILD SUCCESSFUL 17m10s 后卡在下方 dry-run, 已编出的 APK
+          #         永远走不到 Collect/Publish (心跳冻结, 与前两次同一签名)。
+          # 到点杀掉转化为可重试的失败 (rc=124), 不让整个 job 无限陪葬。
+          # 45min 上限依据: attempt 2 实测 17m10s; 宿主争抢最坏有 40min+ 先例;
+          # 3 attempts 全超时也仍在 2h 任务硬限内。
+          timeout 2700 ./gradlew $TASK --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
             e=$?
             echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 失败即诊断: runner 日志流会丢输出 (#281 的 attempt 2/3 回显整段丢失),
@@ -199,7 +209,10 @@ jobs:
             echo "----- What went wrong 段 (attempt $i) -----"
             awk '/What went wrong/{f=1} f{print; n++} n>40{exit}' build.log 2>/dev/null || echo "(无该段)"
             # 重试前杀 daemon: 失败的 daemon 可能带伤存活, 复用会再次崩
-            ./gradlew --stop >/dev/null 2>&1 || true
+            # timeout 兜底 (同 attempt): #294 实测卡死在 attempt 1 失败后的这一步——
+            # --stop 对状态异常的 daemon 永不返回, 重试循环跟着无限卡死。120s 杀不掉
+            # 也放行, 不让一次失败拖死整个 job
+            timeout 120 ./gradlew --stop >/dev/null 2>&1 || true
             # 并清半成品 accessor: #290 attempt 2 复用 attempt 1 失败留下的
             # "Generated class ... not found" 根因; Tune 步只清理一次, 重试前必须再清
             rm -rf .gradle/sweet-dependency/dependencies-accessors .gradle/sweet-property/properties-accessors
@@ -217,7 +230,10 @@ jobs:
             echo "--- build.log 任务清单尾 15 行 ---"
             grep -a "> Task" build.log | tail -15 || echo "(无任务行)"
             echo "--- dry-run: assembleRelease 关键任务状态 ---"
-            ./gradlew :app:assembleRelease --dry-run --console=plain 2>&1 | grep -aE ":app:(packageRelease|assembleRelease|minifyReleaseWithR8)" | head -5 || true
+            # timeout 兜底 (同 attempt): #296 实测 BUILD SUCCESSFUL 后卡死在这条 dry-run
+            # (冻结合并前两次的死亡签名), 导致产物清点之后的 Collect/Publish 永远跑不到。
+            # 300s 上限 + 管道末已有 || true: 诊断价值保留, 挂死不再阻断发布链路
+            timeout 300 ./gradlew :app:assembleRelease --dry-run --console=plain 2>&1 | grep -aE ":app:(packageRelease|assembleRelease|minifyReleaseWithR8)" | head -5 || true
           } 2>&1 | tee build_inventory.txt
           exit $e
 
