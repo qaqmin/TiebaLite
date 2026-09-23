@@ -149,13 +149,16 @@ jobs:
               printf '\norg.gradle.workers.max=1\n' >> gradle.properties
               ;;
             *)
-              # 09-23 下午 #300 三次 attempt 全灭, 死因全部指向 Kotlin 编译堆:
-              #   attempt 1 daemon 被宿主 OOM kill; attempt 2 :app:kspDebugKotlin 与
-              #   attempt 3 :app:compileDebugKotlin 均 "Not enough memory to run
-              #   compilation" — 2048m 在宿主机争抢下不够 (同配置 #293 今早还能过)。
-              # Kotlin daemon 2048m→3072m 直接对症; Gradle daemon 保项目默认 4096m 不动
-              # (#281 证明 debug dex 合并要 4096m, 不动它)。
-              printf '\nkotlin.daemon.jvmargs=-Xmx3072m\n' >> gradle.properties
+              # 09-23 下午 #300/#301 六次 attempt 全灭, 死因全部指向 Kotlin 编译堆:
+              #   #300: daemon 被宿主 kill + kspDebugKotlin/compileDebugKotlin OOM @2048m;
+              #   #301: compileDebugKotlin OOM @3072m (同代码 #293 今早 @2048m 能过,
+              #   说明堆上限只是防线, 宿主机争抢才是决定因素, 编译侧要给足)。
+              # 分支路径最终配置 (对齐 #251 全绿时的双 daemon 分工):
+              #   Kotlin daemon 4096m — 编译侧最大化;
+              #   Gradle daemon 3072m — dex 合并有 #280 实测 RSS ~2.4G 的先例 (2048m
+              #   封顶下 release dex/R8 成功), 3G 够用; 压低它给编译期让出总量
+              #   (两 daemon 封顶合计 7.2G, 留宿主机争抢余量)。
+              printf '\norg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED\nkotlin.daemon.jvmargs=-Xmx4096m\n' >> gradle.properties
               # workers.max=1: #291 三次 attempt 的 gradle daemon 都被宿主 OOM kill
               # (attempt 2/3 只活 1.5-2 分钟), 序列化任务执行砍掉与两个 daemon 并行的
               # javac 等 worker JVM 峰值; 代价是构建变慢, 分支路径 2h 额度内可容纳
