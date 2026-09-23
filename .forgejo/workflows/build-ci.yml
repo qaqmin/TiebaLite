@@ -199,8 +199,19 @@ jobs:
           # 到点杀掉转化为可重试的失败 (rc=124), 不让整个 job 无限陪葬。
           # 45min 上限依据: attempt 2 实测 17m10s; 宿主争抢最坏有 40min+ 先例;
           # 3 attempts 全超时也仍在 2h 任务硬限内。
-          timeout 2700 ./gradlew $TASK --stacktrace --no-build-cache --console=plain > build.log 2>&1 && { e=0; break; }
-            e=$?
+            if timeout 2700 ./gradlew $TASK --stacktrace --no-build-cache --console=plain > build.log 2>&1; then
+              # gradle exit 0 不等于产物落盘: #297 attempt 1 实测构建 exit 0 但全工作区
+              # 无 APK (与 #273 attempt 3 / #280 attempt 2 同型的"成功但产物不落盘",
+              # 历史成功产出 APK 的 run 全部发生在 attempt 2+)。产物缺失按失败处理走
+              # 重试, 而不是把空产物集放行到 Collect—那时才 exit 1 已经太晚。
+              if find . -path ./.git -prune -o -name "*.apk" -print 2>/dev/null | grep -aq .; then
+                e=0; break
+              fi
+              echo "::error::attempt $i 构建 exit 0 但未找到任何 APK, 按失败重试"
+              e=1
+            else
+              e=$?
+            fi
             echo "$TASK attempt $i failed (rc=$e), retrying..."
             # 失败即诊断: runner 日志流会丢输出 (#281 的 attempt 2/3 回显整段丢失),
             # 每个 attempt 失败时立刻把 build.log 关键段回显, 不等最后全败的 Dump 步骤
@@ -223,6 +234,10 @@ jobs:
           {
             echo "=== 产物清点 (pwd=$(pwd)) ==="
             ls -la app/build/ 2>/dev/null || echo "(无 app/build/ 目录)"
+            # outputs 目录树: #297 的"成功但无 APK"现场只有 app/build 顶层列表,
+            # 看不到 outputs 下到底有没有 apk/ 子目录, 补一棵有界树供定位
+            echo "--- app/build/outputs 目录树 ---"
+            find app/build/outputs -maxdepth 4 2>/dev/null | head -30 || true
             echo "--- 全工作区 APK 搜索 ---"
             find . -path ./.git -prune -o -name "*.apk" -print 2>/dev/null | head -10 || true
             echo "--- build.log BUILD 行 ---"
