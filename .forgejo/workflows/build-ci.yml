@@ -33,7 +33,11 @@ jobs:
     # Kotlin daemon 4096m (给编译期 Kotlin daemon 的启动/提交让出 8G 额度).
     # 另传 --no-build-cache: #273/#280 的"成功但产物不落盘"均出自 from-cache 快速
     # attempt, 关缓存换取每个任务真实执行、产物确定落盘.
-    runs-on: codeberg-medium
+    # 2026-09-24 实测: medium 的 10min 已从 guideline 变成硬限制——run #305/#306/#307
+    # 连续三次在整 10m25s 被取消 (当天更早的 #303 31min / #304 64min 未被杀, 说明是
+    # 下午新上线的策略). release 构建 20min+ (compile+R8) 在 10min 内不可能完成,
+    # 故切 -lazy 变体 (时长放宽到约 24h), 代价是取任务延迟不可控 (可能排队数小时).
+    runs-on: codeberg-medium-lazy
     concurrency:
       # 同一 ref 只保留最新一次 run: 修 CI 期间连续推送不会在共享队列里堆叠
       # (Codeberg 明确要求不要占队列), 被顶掉的旧 run 自动取消
