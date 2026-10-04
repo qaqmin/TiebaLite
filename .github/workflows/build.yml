@@ -45,6 +45,26 @@ jobs:
           printf 'keystore.file=app/tblite_debug.jks\nkeystore.password=tiebalite\nkeystore.key.alias=tiebalite\nkeystore.key.password=tiebalite\n' > keystore.properties
           cat keystore.properties
 
+      # sweet-dependency 配置把官方源覆盖成了 aliyun 国内镜像（为 Codeberg/国内网络加的），
+      # GitHub runner 在海外，拉镜像超时/不可用导致插件标记 artifact 解析失败
+      # （与 Codeberg runner 同型失败）。CI 侧改回官方默认源——只改工作副本，不入库，
+      # 本地与 Mac 构建机（国内网络）继续使用镜像配置。
+      - name: Use official repositories on CI
+        run: |
+          python3 - <<'EOF'
+          p = 'gradle/sweet-dependency/sweet-dependency-config.yaml'
+          s = open(p, encoding='utf-8').read()
+          for mirror, official in (
+              ('https://maven.aliyun.com/repository/gradle-plugin', 'https://plugins.gradle.org/m2'),
+              ('https://maven.aliyun.com/repository/google', 'https://dl.google.com/dl/android/maven2'),
+              ('https://maven.aliyun.com/repository/public', 'https://repo.maven.apache.org/maven2'),
+          ):
+              s = s.replace(mirror, official)
+          open(p, 'w', encoding='utf-8').write(s)
+          print('repositories switched to official sources')
+          EOF
+          grep -A 12 "^repositories:" gradle/sweet-dependency/sweet-dependency-config.yaml
+
       # 内存调优：GitHub runner 7G/2C，对齐 Codeberg tag 路径的实测组合——
       # Gradle daemon 压到 2048m 给编译期让路，Kotlin daemon 4096m（编译期峰值所在），
       # workers.max=1 砍掉与两个 daemon 并行的 worker JVM 峰值。追加同名键后者胜出。
