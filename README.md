@@ -1,32 +1,15 @@
 # <p align="center">贴吧 Lite · TiebaLite</p>
 <p align="center"><strong>第三方百度贴吧 Android 客户端 | 全量一键签到 · 3000+ 吧全覆盖 | 智检更新 · 草稿回溯 | Android 5.0 → 16 全世代兼容 | Compose · Kotlin · 无广告</strong></p>
 <p align="center">
-    <a href="https://github.com/min09577/TiebaLite/releases/latest">
-        <img alt="Latest Release" src="https://img.shields.io/github/v/release/min09577/TiebaLite?style=flat&color=blue">
+    <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
+        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
     </a>
-    <a href="https://github.com/min09577/TiebaLite/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/min09577/TiebaLite/actions/workflows/build.yml/badge.svg?branch=4.0-dev">
-    </a>
-    <a href="https://github.com/min09577/TiebaLite/blob/4.0-dev/LICENSE">
+    <a href="https://github.com/qaqmin09577/TiebaLite/blob/4.0-dev/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green.svg">
     </a>
     <img alt="API" src="https://img.shields.io/badge/API-21%2B-brightgreen">
     <img alt="Android" src="https://img.shields.io/badge/Android-16%20ready-blue">
 </p>
-
-## 🌐 姊妹项目 · 全能下载器 OmniDL
-
-> **刷到好图好视频，还在到处找「保存」按钮？**
->
-> 试试同一位维护者打造的 **[全能下载器 OmniDL](https://github.com/min09577/universal-downloader)** ——
-> 一款 Android 端**泛在媒体获取引擎**：**粘贴任意链接，自动识别并下载**全网 **1000+ 站点**的图片与视频（基于 yt-dlp 内嵌于设备端运行）。
->
-> - 🧠 **粘贴即下**：复制链接 → 打开即自动识别，B站 / 小红书 / 抖音 / 微博 / X 等主流站点全通吃
-> - 🎥 **B站 4K 直下**：自动获取完整 4K 视频流，音轨无损拼装，登录大会员账号全站原画
-> - 📕 **小红书深度适配**：图文批量下载、视频最优码率直连，紧跟前端更新
-> - 🔐 **纯离线运行**：无服务器中转、零数据上传，隐私稳稳留在你的手机里
->
-> 同样的无广告、同样的用心维护——**[→ 前往全能下载器仓库](https://github.com/min09577/universal-downloader)**
 
 ---
 
@@ -40,6 +23,11 @@
 > - 📱 **测试设备**：三星 Galaxy S 系列旗舰 + Z Fold 系列（港版系统）
 > - 🚀 **规划中**：后续有望纳入 OPPO / vivo / 小米 真机覆盖
 > - 🐉 **鸿蒙现状**：暂未持有鸿蒙真机，鸿蒙端 Bug 短期内较难定位修复；如有鸿蒙设备的朋友，欢迎自行下载源码尝试修复
+>
+> 📌 **账号迁移公告（2026-10-04）**：原 GitHub 账号 **min09577** 因不可抗拒原因被封禁（仓库均已 404）。
+> 本项目已整体迁移至新账号 **[qaqmin09577](https://github.com/qaqmin09577/TiebaLite)**；
+> Codeberg 镜像（min09577/TiebaLite）继续同步更新，作为备用更新渠道。
+> 应用内更新检测的默认渠道已切换为 GitHub，旧版本用户仍可正常收到更新推送。
 
 ---
 
@@ -84,7 +72,7 @@
 | 📐 **内容密度调节** | 紧凑/标准/舒适三种间距模式 |
 | 💾 **离线缓存** | 网络断开时自动加载缓存的帖子列表 |
 | 🏗️ **现代技术栈** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
-| 📦 **一键安装** | [Release 页面](https://github.com/min09577/TiebaLite/releases/latest) 直接下载 APK |
+| 📦 **一键安装** | [Release 页面](https://github.com/qaqmin09577/TiebaLite/releases/latest) 直接下载 APK |
 
 ---
 
@@ -93,6 +81,26 @@
 贴吧 Lite 是一个**非官方**的百度贴吧 Android 客户端，使用 Kotlin 编写，UI 采用 Jetpack Compose 构建。支持从 **Android 5.0 到 Android 16** 超长世代覆盖，完美适配 16KB 页面对齐。本质是对百度贴吧 API 的逆向工程实现，目标是在不牺牲核心浏览体验的前提下，提供最轻量、最干净的贴吧客户端。
 
 > **⚠️ 声明：** 本软件及源码仅供学习交流使用，严禁用于商业用途。与百度公司无关。
+
+## 🆕 v4.0.54 — 迁移新账号 · GitHub 主渠道上线
+
+> ### 🏠 新家：qaqmin09577/TiebaLite
+> 项目整体迁移至新 GitHub 账号，原 min09577 账号因不可抗拒原因被封禁（仓库 404）。
+> 应用内更新检测默认渠道切换为 GitHub，Codeberg 镜像继续同步发布作为备用渠道；
+> 关于页与项目信息同步更新，签名钥匙不变，覆盖更新无缝衔接。
+
+## 🆕 v4.0.53 — 构建线切换 · Mac 远程构建机稳定产出
+
+> ### 🛠️ 发布链路加固
+> 构建线切换至 Mac 远程构建机（Codeberg CI 波动期的稳定产出线），
+> 全量 release 构建约 27 分钟完成，签名与本地构建逐位一致。
+
+## 🆕 v4.0.52 — 语义化版本系列 · 双渠道应用内更新
+
+> ### 🔄 版本线与更新体验双升级
+> 版本编号由 v4.0.0-ai.N 体验版系列切换为 v4.0.N 语义化版本系列。
+> 应用内更新支持 Codeberg / GitHub 双渠道，关于页可自选渠道；
+> 启动时的更新检查失败会静默回退备用渠道，stable 通道按 releases 列表筛选最新正式版。
 
 ## 🆕 v4.0.0.50 — 话题榜完整列表页可点击
 
@@ -416,8 +424,8 @@
 🐛 发现 Bug？💡 有好想法？欢迎通过 GitHub Issues 提交：
 
 <p align="center">
-    <a href="https://github.com/min09577/TiebaLite/issues">
-        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/min09577/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
+    <a href="https://github.com/qaqmin09577/TiebaLite/issues">
+        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin09577/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
     </a>
 </p>
 
@@ -484,7 +492,7 @@
 | v4.0.0.48 | 2026-09-10 | 🖼️ **楼中楼带图评论完整渲染** — 接口版本号升级 · 真图渲染+点击大图 · 未知类型日志兜底 |
 | v4.0.0.49 | 2026-09-09 | 🔥 **热榜话题卡片可点击** — 话题卡跳转搜索 · 特殊字符无损 · 裸导航/deepLink 无回归 |
 | v4.0.0.50 | 2026-09-11 | 🧭 **话题榜完整列表页可点击** — 「更多话题」入口补齐 · 跳转搜索过渡方案 · 全链路无死区 |
-| [▶ 最新 Release](https://github.com/min09577/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |
+| [▶ 最新 Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |
 
 ---
 

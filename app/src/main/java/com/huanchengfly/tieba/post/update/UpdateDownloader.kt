@@ -12,15 +12,15 @@ import java.security.MessageDigest
 
 /**
  * 更新检查平台来源（用户可在关于页选择，DataStore 持久化）。
- * 主构建线在 Codeberg，GitHub 为镜像/备用：任一端发了新版本都应能检测到。
+ * 主渠道为 GitHub（qaqmin09577），Codeberg 为镜像/备用：任一端发了新版本都应能检测到。
  */
 enum class UpdateOrigin {
     CODEBERG,
     GITHUB
 }
 
-/** 默认平台来源：Codeberg（当前主构建线）。 */
-val DEFAULT_ORIGIN = UpdateOrigin.CODEBERG
+/** 默认平台来源：GitHub（当前主构建线）。 */
+val DEFAULT_ORIGIN = UpdateOrigin.GITHUB
 
 /**
  * 更新元数据拉取 + APK 下载。只用 HttpURLConnection（无 token，匿名访问 Releases API），
@@ -32,7 +32,7 @@ object UpdateDownloader {
 
     private const val CODEBERG_API_ROOT = "https://codeberg.org/api/v1/repos/min09577/TiebaLite"
 
-    private const val GITHUB_API_ROOT = "https://api.github.com/repos/min09577/TiebaLite"
+    private const val GITHUB_API_ROOT = "https://api.github.com/repos/qaqmin09577/TiebaLite"
 
     /**
      * 各平台 Releases API 根地址。Gitea/Forgejo 的 release/asset 字段名与 GitHub 一致

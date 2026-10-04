@@ -6,7 +6,7 @@ import org.junit.Test
 
 /**
  * 更新渠道（平台来源）与 stable 通道选版：
- * - rootFor/otherOrigin：Codeberg 为默认主渠道，GitHub 为镜像/回退渠道
+ * - rootFor/otherOrigin：GitHub 为默认主渠道，Codeberg 为镜像/回退渠道
  * - pickLatestStable：列表筛选替代 /releases/latest（Codeberg 的 latest 排除 prerelease，
  *   只有预发布时 404），判据剔除 prerelease 与 ai tag，base 优先取最大
  */
@@ -26,14 +26,14 @@ class UpdateOriginTest {
             UpdateDownloader.rootFor(UpdateOrigin.CODEBERG)
         )
         assertEquals(
-            "https://api.github.com/repos/min09577/TiebaLite",
+            "https://api.github.com/repos/qaqmin09577/TiebaLite",
             UpdateDownloader.rootFor(UpdateOrigin.GITHUB)
         )
     }
 
     @Test
-    fun `default origin is codeberg`() {
-        assertEquals(UpdateOrigin.CODEBERG, DEFAULT_ORIGIN)
+    fun `default origin is github`() {
+        assertEquals(UpdateOrigin.GITHUB, DEFAULT_ORIGIN)
     }
 
     @Test

@@ -64,3 +64,9 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+
+# 本地构建产物暂存目录（Mac 构建机产物取回处，不入库）
+artifacts/
+
+# 本地会话交接文档（不入库）
+HANDOFF_CI.md
