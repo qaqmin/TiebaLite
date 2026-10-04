@@ -19,15 +19,24 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      # runner 镜像无 Android SDK；cmdline-tools 装好后 AGP 会自行按 compileSdk
-      # 补装 platform / build-tools（sdkmanager 已在 PATH 且 licenses 已 accept）
+      # runner 镜像自带 Android SDK（/usr/local/lib/android/sdk，含 cmdline-tools），
+      # 接受 licenses 后由 AGP 按 compileSdk 自行补装 platform / build-tools；
+      # 显式补装 platforms;android-36 + build-tools;36.0.0 兜底。
+      # （不用 android-actions/setup-android@v3：其内部安装已废弃的 'tools' 包，
+      #   在新版 cmdline-tools 下必失败，实测 exit 1）
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          SDK=/usr/local/lib/android/sdk
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools" >/dev/null 2>&1 || true
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          ls "$SDK/platforms" "$SDK/build-tools"
 
       # keystore.properties 不入库（.gitignore），CI 现场生成——与 Codeberg 线同款，
       # 指向仓库内已跟踪的 app/tblite_debug.jks（alias/密码见文件内容）
