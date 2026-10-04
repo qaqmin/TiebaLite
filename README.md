@@ -4,6 +4,9 @@
     <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
         <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
     </a>
+    <a href="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml/badge.svg">
+    </a>
     <a href="https://github.com/qaqmin09577/TiebaLite/blob/4.0-dev/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green.svg">
     </a>
