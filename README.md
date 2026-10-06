@@ -1,5 +1,9 @@
-# <p align="center">贴吧 Lite · TiebaLite</p>
-<p align="center"><strong>第三方百度贴吧 Android 客户端 | 全量一键签到 · 3000+ 吧全覆盖 | 智检更新 · 草稿回溯 | Android 5.0 → 16 全世代兼容 | Compose · Kotlin · 无广告</strong></p>
+<p align="center">
+  <b>English</b> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a>
+</p>
+
+# <p align="center">Tieba Lite · TiebaLite</p>
+<p align="center"><strong>Unofficial Baidu Tieba Android Client | One-Tap Full Check-In · 3000+ Forums Covered | Smart Update Check · Draft Recall | Android 5.0 → 16 Full Compatibility | Compose · Kotlin · No Ads</strong></p>
 <p align="center">
     <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
         <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
@@ -16,415 +20,412 @@
 
 ---
 
-
-> ### 👤 维护者近况 / Maintainer's Corner
-> 当你发现本仓库没有更新版本或修复 Bug 时，维护者大概率正在 **旅行、跑外卖、打游戏、写小说**，
-> 或是在 **美 / 韩 / 日 股市与外汇市场** 间辗转腾挪，亦或是在领取失业金——生活的剧本从不单一。
+> ### 👤 Maintainer's Corner
+> When you notice this repo hasn't shipped a new version or fixed bugs for a while, the maintainer is most likely **traveling, delivering food, gaming, or writing novels**,
+> or shuttling between the **US / Korea / Japan stock and forex markets** — or perhaps claiming unemployment benefits. Life's script is never monotonous.
 >
-> 但请放心：**每一枚被提交的 Bug，都会被逐一排查、逐一修复。**
+> But rest assured: **every reported bug will be investigated and fixed, one by one.**
 >
-> - 📱 **测试设备**：三星 Galaxy S 系列旗舰 + Z Fold 系列（港版系统）
-> - 🚀 **规划中**：后续有望纳入 OPPO / vivo / 小米 真机覆盖
-> - 🐉 **鸿蒙现状**：暂未持有鸿蒙真机，鸿蒙端 Bug 短期内较难定位修复；如有鸿蒙设备的朋友，欢迎自行下载源码尝试修复
+> - 📱 **Test devices**: Samsung Galaxy S-series flagships + Z Fold series (HK ROM)
+> - 🚀 **Planned**: OPPO / vivo / Xiaomi real-device coverage down the road
+> - 🐉 **HarmonyOS status**: No HarmonyOS device on hand for now, so HarmonyOS-side bugs are hard to locate and fix in the short term; friends with HarmonyOS devices are welcome to download the source and try fixing them
 >
-> 📌 **账号迁移公告（2026-10-04）**：原 GitHub 账号 **min09577** 因不可抗拒原因被封禁（仓库均已 404）。
-> 本项目已整体迁移至新账号 **[qaqmin09577](https://github.com/qaqmin09577/TiebaLite)**；
-> Codeberg 镜像（min09577/TiebaLite）继续同步更新，作为备用更新渠道。
-> 应用内更新检测的默认渠道已切换为 GitHub，旧版本用户仍可正常收到更新推送。
+> 📌 **Account Migration Notice (2026-10-04)**: The original GitHub account **min09577** was banned for reasons beyond our control (all of its repositories now return 404).
+> This project has fully migrated to the new account **[qaqmin09577](https://github.com/qaqmin09577/TiebaLite)**;
+> the Codeberg mirror (min09577/TiebaLite) continues to sync and serve as a fallback update channel.
+> The default in-app update channel has switched to GitHub; users on older versions can still receive updates as usual.
 
 ---
 
-## ☕ 随缘赞助 (Sponsor)
+## ☕ Optional Sponsorship
 
-这个项目是利用业余时间“用爱发电”写出来的，能帮到大家我非常开心。不过随着项目的不断完善，跑测试消耗的 API Tokens 确实超出了我的预期，加上长时间的调试，也搭进去了不少休息时间（笑）。
+This project is written in spare time, powered purely by passion. I'm glad if it helps you. Still, the API tokens consumed by testing have exceeded my expectations, and the long debugging hours have eaten into a fair share of rest time (lol).
 
-如果这个项目恰好为你解决了问题，或者帮你省下了一些折腾的时间，欢迎随缘投喂。你的打赏将全部用于“回血”高昂的 API 账单，这也是让我能毫无顾忌持续更新它的最大动力。
+If this project happens to solve a problem for you, or saves you some tinkering time, feel free to tip as you wish. All donations go toward "refilling" the hefty API bills — and they are the biggest motivation that lets me keep updating it without reservation.
 
-当然，完全自愿，千万别有任何压力。只要你觉得好用，点个 **Star** 同样是对我极大的鼓励！
-
-> **Tip:** 为了避免大家承担高昂的转账手续费，建议通过 **BNB Smart Chain (BEP-20)** 网络进行转账。感谢支持！
+Of course, it is entirely voluntary — please don't feel any pressure. If you find it useful, a **Star** alone is a huge encouragement.
 
 <p align="center">
     <img src="docs/images/sponsor_qr.png" alt="Sponsor QR (Binance · BEP-20)" width="360">
 </p>
 
-<p align="center"><i>币安收款二维码 · Binance Wallet QR（USDT · BNB Smart Chain / BEP-20）</i></p>
+<p align="center"><i>Binance Wallet QR · USDT · BNB Smart Chain / BEP-20</i></p>
 
 ---
 
-## ✨ 为什么选择贴吧 Lite / Why TiebaLite
+## ✨ Why TiebaLite
 
-| 特性 | 说明 |
+| Feature | Description |
 |------|------|
-| 📝 **全量一键签到** | 智能分页拉取所有关注贴吧，单次签到覆盖 3000+ 吧，通知栏实时进度 |
-| ⏰ **定时自动签到** | Doze 休眠精准唤醒，零后台驻留，到点自动完成全量签到 |
-| 📝 **草稿箱回溯** | 回复自动保存，草稿列表带吧名/内容预览，点击直达原帖楼层 |
-| 🔄 **倒序浏览 · 只看楼主** | 排序链路兜底贯通，收藏页 / 搜索页进入均稳定生效 |
-| 🎯 **通知直达原帖** | 「回复我的」一键跳转原帖对应楼层，上下文一目了然 |
-| 🎬 **视频播放畅通** | 贴吧视频 http→https 自动升级 + bdstatic 白名单，黑盒彻底打通 |
-| 🛡️ **导航零闪退** | 全项目路由陷阱收网，长按复制 / 吧规 / 吧内搜索稳如磐石 |
-| 🔍 **智能检查更新** | 内置 GitHub Release 探测，一键比对云端版本，直链下载 release APK |
-| 🖼️ **图片批量下载** | PhotoView 多选模式，跨页勾选，一键保存全部选中图片 |
-| 📋 **应用日志窗** | 关于页一键进入，实时记录关键操作，支持复制分享辅助排障 |
-| 🚫 **零广告** | 无横幅、无推广、无信息流广告，纯粹浏览体验 |
-| 🎨 **Material Design** | Jetpack Compose 构建，原生 Material You 动态主题 |
-| ⚡ **轻量流畅** | APK 仅 ~10MB，自适应高刷，无冗余功能 |
-| 🔒 **隐私优先** | 无埋点跟踪，仅与百度贴吧 API 通信 |
-| 📱 **超长世代兼容** | 横跨 Android 5.0 (API 21) 至 Android 16 (API 36)，11 年系统全面覆盖，16KB 页对齐 |
-| 👥 **多账号切换** | 点击头像一键切换账号，支持多账号管理 |
-| 📐 **内容密度调节** | 紧凑/标准/舒适三种间距模式 |
-| 💾 **离线缓存** | 网络断开时自动加载缓存的帖子列表 |
-| 🏗️ **现代技术栈** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
-| 📦 **一键安装** | [Release 页面](https://github.com/qaqmin09577/TiebaLite/releases/latest) 直接下载 APK |
+| 📝 **One-Tap Full Check-In** | Smart paginated fetching of all followed forums; a single run covers 3000+ forums with real-time notification progress |
+| ⏰ **Scheduled Auto Check-In** | Precise wake-up even in Doze mode; zero background residency — the full check-in completes on time, automatically |
+| 📝 **Draft Recall** | Replies are auto-saved; the draft list shows forum name / content preview and jumps straight back to the original floor |
+| 🔄 **Reverse Order · OP Only** | The sorting fallback chain is fully wired up; works stably when entering from Favorites or Search |
+| 🎯 **Notifications Jump to Original Thread** | "Replies to Me" jumps straight to the corresponding floor in the original thread — full context at a glance |
+| 🎬 **Smooth Video Playback** | Tieba video http→https auto-upgrade + bdstatic allowlist; the black box is fully cracked |
+| 🛡️ **Zero Navigation Crashes** | All routing traps across the project have been swept; long-press copy / forum rules / in-forum search are rock solid |
+| 🔍 **Smart Update Check** | Built-in GitHub Release probe; one-tap cloud version comparison with direct APK download |
+| 🖼️ **Batch Image Download** | PhotoView multi-select mode: pick across pages and save all selected images in one tap |
+| 📋 **In-App Log Window** | One tap from the About page; records key operations in real time with copy & share for troubleshooting |
+| 🚫 **Zero Ads** | No banners, no promotions, no feed ads — a pure browsing experience |
+| 🎨 **Material Design** | Built with Jetpack Compose; native Material You dynamic theming |
+| ⚡ **Light & Smooth** | APK is only ~10MB, adaptive refresh rate, no redundant features |
+| 🔒 **Privacy First** | No tracking, communicates only with the Baidu Tieba API |
+| 📱 **Exceptional Generation Coverage** | Spans Android 5.0 (API 21) to Android 16 (API 36) — 11 years of OS versions, with 16KB page alignment |
+| 👥 **Multi-Account Switching** | Tap your avatar to switch accounts instantly; full multi-account management |
+| 📐 **Content Density** | Compact / Standard / Comfortable spacing modes |
+| 💾 **Offline Cache** | Automatically loads cached thread lists when the network drops |
+| 🏗️ **Modern Tech Stack** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
+| 📦 **One-Tap Install** | Download the APK directly from the [Releases page](https://github.com/qaqmin09577/TiebaLite/releases/latest) |
 
 ---
 
-## 📖 简介
+## 📖 Introduction
 
-贴吧 Lite 是一个**非官方**的百度贴吧 Android 客户端，使用 Kotlin 编写，UI 采用 Jetpack Compose 构建。支持从 **Android 5.0 到 Android 16** 超长世代覆盖，完美适配 16KB 页面对齐。本质是对百度贴吧 API 的逆向工程实现，目标是在不牺牲核心浏览体验的前提下，提供最轻量、最干净的贴吧客户端。
+TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin with a Jetpack Compose UI. It supports an exceptionally long device range from **Android 5.0 to Android 16** with full 16KB page alignment. At its core it is a reverse-engineering implementation of the Baidu Tieba API, aiming to provide the lightest, cleanest Tieba client without sacrificing the core browsing experience.
 
-> **⚠️ 声明：** 本软件及源码仅供学习交流使用，严禁用于商业用途。与百度公司无关。
+> **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
-## 🆕 v4.0.54 — 迁移新账号 · GitHub 主渠道上线
+## 🆕 v4.0.54 — Account Migration · GitHub as Primary Channel
 
-> ### 🏠 新家：qaqmin09577/TiebaLite
-> 项目整体迁移至新 GitHub 账号，原 min09577 账号因不可抗拒原因被封禁（仓库 404）。
-> 应用内更新检测默认渠道切换为 GitHub，Codeberg 镜像继续同步发布作为备用渠道；
-> 关于页与项目信息同步更新，签名钥匙不变，覆盖更新无缝衔接。
+> ### 🏠 New Home: qaqmin09577/TiebaLite
+> The project has fully migrated to the new GitHub account after the original min09577 account was banned for reasons beyond our control (its repositories return 404).
+> The default in-app update channel now points to GitHub, while the Codeberg mirror continues publishing in parallel as a fallback channel;
+> the About page and project metadata are updated accordingly, and the signing key is unchanged — overwrite updates carry over seamlessly.
 
-## 🆕 v4.0.53 — 构建线切换 · Mac 远程构建机稳定产出
+## 🆕 v4.0.53 — Build Pipeline Switch · Stable Output from the Mac Remote Builder
 
-> ### 🛠️ 发布链路加固
-> 构建线切换至 Mac 远程构建机（Codeberg CI 波动期的稳定产出线），
-> 全量 release 构建约 27 分钟完成，签名与本地构建逐位一致。
+> ### 🛠️ Hardened Release Pipeline
+> The build pipeline moved to the Mac remote build machine (a stable output line during the Codeberg CI turbulence);
+> a full release build completes in about 27 minutes with signatures byte-identical to local builds.
 
-## 🆕 v4.0.52 — 语义化版本系列 · 双渠道应用内更新
+## 🆕 v4.0.52 — Semantic Versioning · Dual-Channel In-App Updates
 
-> ### 🔄 版本线与更新体验双升级
-> 版本编号由 v4.0.0-ai.N 体验版系列切换为 v4.0.N 语义化版本系列。
-> 应用内更新支持 Codeberg / GitHub 双渠道，关于页可自选渠道；
-> 启动时的更新检查失败会静默回退备用渠道，stable 通道按 releases 列表筛选最新正式版。
+> ### 🔄 Dual Upgrade for Versioning and Update Experience
+> The version scheme switched from the v4.0.0-ai.N preview series to the semantic v4.0.N series.
+> In-app updates now support dual channels (Codeberg / GitHub), selectable from the About page;
+> a failed startup update check silently falls back to the secondary channel, and the stable channel filters the latest official release from the releases list.
 
-## 🆕 v4.0.0.50 — 话题榜完整列表页可点击
+## 🆕 v4.0.0.50 — Full Topic List Page Now Clickable
 
-> ### 🧭 「更多话题」，现在也点得动
-> 补齐话题榜第二条入口：完整列表页条目点击跳转搜索页，
-> 与页内话题卡同一过渡方案，特殊字符无损（#39）。
-> 热榜话题榜全链路可点，无剩余死区。
+> ### 🧭 "More Topics" Is Now Tappable Too
+> Completed the second entry to the topic ranking: items in the full list page now jump to the search page,
+> sharing the same transition as in-page topic cards, with special characters preserved intact (#39).
+> The hot topic ranking is now fully clickable end to end, with no dead zones left.
 
-## 🆕 v4.0.0.49 — 热榜话题卡片可点击
+## 🆕 v4.0.0.49 — Hot Topic Cards Now Clickable
 
-> ### 🔥 话题榜，点了就有结果
-> 修复热榜话题榜卡片点击无响应：点击话题卡自动跳转
-> 搜索页并搜索该话题，特殊字符话题名也无损跳转（#39）。
+> ### 🔥 Tap a Topic, Get Results
+> Fixed hot topic ranking cards not responding to taps: tapping a topic card now jumps
+> to the search page and searches that topic, with special characters in topic names jumping losslessly (#39).
 
-## 🆕 v4.0.0.48 — 楼中楼带图评论完整渲染
+## 🆕 v4.0.0.48 — Full Rendering of Image Comments in Sub-Floors
 
-> ### 🖼️ 楼中楼里的图，终于看得见了
-> 接口客户端版本号升级后，带图评论完整下发图片数据——
-> 真图渲染 + 点击大图，不再「[图片]」占位（#27）。
-> 未知内容类型日志兜底，官方数据格式演进可持续观测。
+> ### 🖼️ Images in Sub-Flors Are Finally Visible
+> After upgrading the API client version number, image comments now deliver full image data —
+> real image rendering plus tap-to-enlarge, no more "[image]" placeholders (#27).
+> Unknown content types get a logging fallback so future official data format changes stay observable.
 
-## 🆕 v4.0.0.47 — 主页面底栏导航条适配
+## 🆕 v4.0.0.47 — Home Bottom Bar Navigation Adaptation
 
-> ### 📱 主页底栏，暗黑也服帖
-> 主页面底部导航栏适配系统导航条：背景色延伸到安全区，
-> 暗黑模式不再出现透明断层；手势导航 28dp 确定性兜底（#36）。
-> 三键导航设备无视觉变化，主页每个 tab 都稳稳当当。
+> ### 📱 The Home Bottom Bar Behaves in Dark Mode Too
+> The home page bottom navigation bar now adapts to the system navigation bar: the background color extends into the safe area,
+> and dark mode no longer shows transparent seams; gesture navigation gets a deterministic 28dp fallback (#36).
+> Three-button navigation devices see no visual change; every home tab stays rock solid.
 
-## 🆕 v4.0.0.46 — 图片查看沉浸过渡 + 列表滚动位置记忆
+## 🆕 v4.0.0.46 — Immersive Image Transitions + List Scroll Position Memory
 
-> ### 🖼️ 看图不跳，沉浸不惊
-> 图片查看页进出改用系统过渡：状态栏平滑淡入淡出，
-> 分享面板往返也稳稳保持沉浸态，告别「跳一下」（#34）。
+> ### 🖼️ No Jumps When Viewing Images, No Startle When Immersing
+> The image viewer now uses system transitions for enter/exit: the status bar fades smoothly,
+> and the share panel keeps the immersive state across round trips — no more "jumping" (#34).
 >
-> ### 📍 去了个用户页，回来还在原地
-> 楼中楼与主贴楼层列表新增滚动位置记忆——
-> 点进个人主页再返回，停在你离开的地方，不必重新翻找（#8）。
+> ### 📍 Visit a User Page, Come Back Right Where You Were
+> Sub-floor and main floor lists now remember scroll position —
+> tap into a profile and return, and you land where you left off instead of hunting again (#8).
 
-## 🆕 v4.0.0.45 — 楼中楼回复绑定修正 + 吧名路由加固
+## 🆕 v4.0.0.45 — Sub-Floor Reply Binding Fix + Forum Name Routing Hardening
 
-> ### 🎯 回复谁，就是回复谁
-> 修复楼中楼回复降级：回帖路由补齐 subPostId 消费，
-> 回复楼中楼内评论精准锁定目标，不再降级到楼层（PR#33 后续加固）。
+> ### 🎯 Whoever You Reply To, Is Who You Reply To
+> Fixed sub-floor reply downgrade: the reply route now consumes subPostId,
+> precisely locking onto the target comment inside a sub-floor instead of downgrading to the floor (follow-up hardening for PR#33).
 >
-> ### 🛡️ 特殊吧名，路由不乱
-> 三处回复导航的吧名参数补编码，`&`/`#`/空格等特殊字符
-> 不再破坏路由——与此前的编码规范全面对齐。
+> ### 🛡️ Special Forum Names Don't Break Routing
+> Forum name parameters in three reply navigation paths are now encoded, so special characters like
+> `&` / `#` / spaces no longer break routing — fully aligned with the established encoding convention.
 
-## 🆕 v4.0.0.44 — 启动页自定义 + 楼中楼图片占位
+## 🆕 v4.0.0.44 — Custom Startup Page + Image Placeholders in Sub-Floors
 
-> ### 🚀 打开就是你想看的页面
-> 新增「启动页」设置：首页 / 动态 / 消息 / 我，任选其一作为启动默认页，
-> 与「隐藏动态入口」联动回退，怎么配都不越界（#30）。
+> ### 🚀 Open Straight to the Page You Want
+> New "Startup Page" setting: Home / Feed / Messages / Me — pick any one as the default startup page,
+> with linked fallback for the "hide feed entry" option; no configuration goes out of bounds (#30).
 >
-> ### 🖼️ 楼中楼带图评论，一条都不丢
-> 内容渲染补全新图片类型，带图评论不再被静默丢弃；
-> 预览行补「[图片]」占位提示，详情页图片支持点击查看大图（#27）。
+> ### 🖼️ Not a Single Image Comment Is Lost
+> Content rendering now covers the new image type, so image comments are no longer silently dropped;
+> the preview row gains a "[image]" placeholder, and detail-page images support tap-to-enlarge (#27).
 
-## 🆕 v4.0.0.43 — 楼层回复定位修正 + 回帖页状态栏避让
+## 🆕 v4.0.0.43 — Floor Reply Positioning Fix + Reply Page Status Bar Avoidance
 
-> ### 💬 每一条回复，都落在它该在的楼层
-> 修复「无法成为第一个楼中楼」：楼层回复的定位参数不再丢失，
-> 点击「评论」或长按「回复」的内容直达该楼层楼中楼，不再误发主贴（#26）。
+> ### 💬 Every Reply Lands in Its Proper Floor
+> Fixed "cannot become the first sub-floor": floor reply positioning parameters are no longer lost;
+> tapping "Comment" or long-pressing "Reply" now goes straight to that floor's sub-floor instead of accidentally posting to the main thread (#26).
 >
-> ### 📐 回帖页顶栏，与状态栏不再打架
-> 回帖编辑页顶部避让补齐，标题与状态栏保持安全距离，
-> 深浅色主题一致表现；三条回复链路真机回归、零崩溃（#29）。
+> ### 📐 The Reply Page Top Bar No Longer Fights the Status Bar
+> Reply editor top avoidance is now complete, keeping a safe distance between the title and the status bar,
+> with consistent behavior in light and dark themes; three reply paths pass on-device regression with zero crashes (#29).
 
-## 🆕 v4.0.0.42 — 点赞列表完整呈现
+## 🆕 v4.0.0.42 — Full Presentation of the Likes List
 
-> ### 👍 收到的赞，每一条都清晰可见
-> 修复「收到的赞」列表空白问题：为点赞消息建立专用数据模型，
-> 点赞者头像、昵称、时间与「赞了你的帖子：标题」完整呈现，
-> 并经双设备真机验证，真实数据全量渲染、全程零崩溃（#16）。
+> ### 👍 Every Like You Received, Clearly Visible
+> Fixed the blank "Received Likes" list: a dedicated data model was built for like messages,
+> fully presenting the liker's avatar, nickname, time, and "liked your thread: title",
+> verified on two real devices with full real-data rendering and zero crashes (#16).
 >
-> ### 🧭 每一条赞都能追根溯源
-> 点击条目直达被赞帖子，点击头像进入点赞者主页；
-> 同步加入空态兜底、刷新与分页去重、空值防护加固，
-> 列表体验与「回复我的」全面对齐。
+> ### 🧭 Every Like Can Be Traced to Its Source
+> Tap an item to jump to the liked thread, tap an avatar to enter the liker's profile;
+> empty-state fallback, refresh and pagination deduplication, and null-value hardening were added in sync,
+> aligning the list experience fully with "Replies to Me".
 
-## 🆕 v4.0.0.41 — 手势热区二次加固
+## 🆕 v4.0.0.41 — Second Round of Gesture Hot Zone Hardening
 
-> ### 🎯 不再依赖系统上报，避让「确定性」生效
-> 部分 ROM（ColorOS 16 等）在手势导航下会将 `navigationBars` 与
-> `safeGestures` 同时上报为 0，基于 inset 的避让随之失效。
-> 现引入统一底栏安全区组件：真实值优先，**双零时以 28dp 手势热区高度确定性兜底**，
-> 并在避让区域内主动消费点击，杜绝穿透。
+> ### 🎯 No Longer Dependent on System Reporting — Avoidance Now "Deterministic"
+> Some ROMs (ColorOS 16, etc.) report both `navigationBars` and
+> `safeGestures` as 0 under gesture navigation, invalidating inset-based avoidance.
+> A unified bottom-bar safe-area component is now introduced: real values take priority, and **when both are zero, a deterministic 28dp gesture hot zone height is used as fallback**,
+> with clicks actively consumed inside the avoidance area to prevent pass-through.
 >
-> ### 📋 「更多」弹层一并加固
-> 误触的「只看楼主 / 收藏」选项位于底部弹层——本次为其补齐手势热区避让，
-> 弹层内容整体抬出热区（#20）。
+> ### 📋 The "More" Popup Is Hardened Too
+> The mis-tapped "OP Only / Favorite" options live in the bottom popup — gesture hot zone avoidance is now added there as well,
+> lifting the popup content entirely out of the hot zone (#20).
 
-## 🆕 v4.0.0.40 — 举报跳转修正 + 全面屏手势避让
+## 🆕 v4.0.0.40 — Report Jump Fix + Full-Screen Gesture Avoidance
 
-> ### 🧭 举报流程，一步到位
-> 修复举报成功后跳转网页的插值缺失，跳转地址同步纳入统一编码规范，
-> 举报闭环流程恢复完整可用。
+> ### 🧭 The Reporting Flow, One Step to the Finish
+> Fixed missing interpolation in the web redirect after a successful report, and brought the redirect URL
+> under the unified encoding convention, restoring the full closed loop of the reporting flow.
 >
-> ### 🖐️ 手势导航，底部不再误触
-> 全面屏手势下点击帖子底部会误触「只看楼主 / 收藏」——根因是底栏避让
-> 只计入了系统导航条、漏掉了手势热区。现同时避让两者
-> （`navigationBars ∪ safeGestures`），手势与三键导航均表现正确，
-> 楼中楼页面同步加固（#20）。
+> ### 🖐️ Gesture Navigation, No More Mis-Taps at the Bottom
+> Tapping the bottom of a thread under full-screen gestures used to mis-trigger "OP Only / Favorite" — the root cause was the bottom bar avoidance
+> only accounting for the system navigation bar and missing the gesture hot zone. Both are now avoided
+> (`navigationBars ∪ safeGestures`), with correct behavior for gesture and three-button navigation alike;
+> sub-floor pages are hardened in sync (#20).
 
-## 🆕 v4.0.0.39 — 特殊字符路由加固
+## 🆕 v4.0.0.39 — Special Character Routing Hardening
 
-> ### 🛡️ 复制与外链，从此稳如磐石
-> 复制含链接的回帖、点击帖子内的网页链接（网盘链接等）瞬时闪退——
-> 根因是链接与特殊字符（`/ ? & :`）未经 URI 编码即被拼入导航路由，
-> 破坏路由匹配规则（#19）。
+> ### 🛡️ Copy and External Links, Now Rock Solid
+> Copying a reply containing links, or tapping web links inside threads (cloud drive links, etc.) caused instant crashes —
+> the root cause was links and special characters (`/ ? & :`) being concatenated into navigation routes without URI encoding,
+> breaking route matching (#19).
 >
-> ### 🔐 全链路编码，往返无损
-> 复制对话框与网页路由的参数统一经 `Uri.encode` 编码传递，六处调用点一次收口，
-> 覆盖楼层复制、楼中楼复制、外链跳转及视频卡片等全部同族路径；
-> 读取侧由框架自动解码，中文、空格、emoji、完整 URL 均原样还原。
+> ### 🔐 End-to-End Encoding, Lossless Round Trips
+> Copy dialogs and web route parameters are now uniformly passed through `Uri.encode`, closing the loop across six call sites,
+> covering floor copy, sub-floor copy, external link jumps, and video cards; the reading side is auto-decoded by the framework,
+> restoring Chinese, spaces, emoji, and full URLs exactly as they were.
 
-## 🆕 v4.0.0.38 — 启动稳定性重构 + 收藏偏好贯通
+## 🆕 v4.0.0.38 — Startup Stability Refactor + Favorites Preference Wiring
 
-> ### 🚀 冷启动闪退根治（社区贡献合入 · 致谢 @wufeng5702）
-> 红米 K50 / Note 11T Pro / Nothing Phone 2 等机型「点开即闪退」的顽疾尘埃落定：
-> 根因为 `LocalNavigator` 未在顶层组合作用域提供，导航上下文在部分启动路径下悬空。
-> 现于 `MainActivityV2` 顶层 `CompositionLocalProvider` 全局注入，
-> `NotificationsPage` 显式传参、`HotPage` 消除参数遮蔽，二十余处读取点全部兜底（#6 / #9 / #17）。
+> ### 🚀 Cold-Start Crash Root Cause Fixed (Community Contribution Merged · Thanks @wufeng5702)
+> The "crashes on open" plague on devices like Redmi K50 / Note 11T Pro / Nothing Phone 2 is settled:
+> the root cause was `LocalNavigator` not being provided in the top-level composition scope, leaving the navigation context dangling on some startup paths.
+> It is now globally injected at the top level of `MainActivityV2` via `CompositionLocalProvider`,
+> with `NotificationsPage` passing parameters explicitly, `HotPage` eliminating parameter shadowing, and over twenty read sites fully covered (#6 / #9 / #17).
 >
-> ### 🧬 Java 21 API 前向兼容
-> `removeFirst()` / `removeLast()` 统一替换为 `removeAt()` 等价写法，
-> 规避高版本 JDK 编译产物在旧版 Android 运行时触发 `NoSuchMethodError` 的隐患。
+> ### 🧬 Java 21 API Forward Compatibility
+> `removeFirst()` / `removeLast()` are uniformly replaced with equivalent `removeAt()` forms,
+> avoiding `NoSuchMethodError` when builds from newer JDKs run on older Android runtimes.
 >
-> ### 🎛️ 收藏页浏览偏好全链路生效
-> 「从收藏进入默认只看楼主 / 默认倒序浏览」两个开关此前仅有定义、未参与初始化。
-> 现打通 `from=FROM_STORE` 路由传递链（Routes → MainActivity → 收藏页跳转），
-> 进帖即应用偏好；刷新 / 重试 / 续读全程携带收藏上下文不回退，手动切换依旧即时生效（#3）。
+> ### 🎛️ Favorites Browsing Preferences Now Take Effect End to End
+> The two switches "default OP Only when entering from Favorites / default reverse browsing" previously existed only in definition and never participated in initialization.
+> The `from=FROM_STORE` route passing chain (Routes → MainActivity → Favorites page jump) is now wired up,
+> applying preferences on thread entry; refresh / retry / continue-reading all carry the favorites context without fallback, and manual switching still applies instantly (#3).
 
-## 🆕 v4.0.0.37 — 回帖直达自己主页
+## 🆕 v4.0.0.37 — Replies Go Straight to Your Own Profile
 
-> ### 🎯 个人中心回帖入口精准归位
-> 个人中心「回帖」统计数字此前误用本地数据库主键 `account.id` 当作贴吧 UID，
-> 导致误入他人主页。现已改用真实贴吧 UID `account.uid`。
+> ### 🎯 Profile "Replies" Entry Precisely Placed
+> The "Replies" count in the profile previously misused the local database primary key `account.id` as the Tieba UID,
+> leading to other people's profiles. It now uses the real Tieba UID `account.uid`.
 >
-> ### 📑 Tab 精准定位
-> 「回帖」点击现在直达用户详情页的「回复」Tab（`user/{uid}?tab=1`），
-> 三级 Composable 函数（Page → Content → Normal/Expanded）参数链贯通，无需手动切换。
+> ### 📑 Precise Tab Positioning
+> Tapping "Replies" now goes straight to the "Replies" tab of the user detail page (`user/{uid}?tab=1`),
+> with the three-level Composable function parameter chain (Page → Content → Normal/Expanded) fully wired — no manual switching needed.
 
-## 🆕 v4.0.0.35 — 回帖点击回归
+## 🆕 v4.0.0.35 — Reply Taps Restored
 
-> ### 🎯 个人中心回帖入口启用
-> 个人中心的「回帖」统计数字之前无任何响应，现已接入跳转逻辑：
-> 点击 → 直接进入二级菜单用户详情页，复用既有回复 Tab。
+> ### 🎯 Profile "Replies" Entry Enabled
+> The "Replies" count in the profile previously did nothing; jump logic is now wired in:
+> tap → straight into the second-level menu user detail page, reusing the existing Replies tab.
 >
-> ### 🔗 二级菜单回帖点击统一跳转
-> 点击二级菜单「回复」列表中的内容（红色框区域）原会因路由字面量陷阱闪退：
-> - `subposts/0`（硬编码 threadId=0） → SubPostsPage 加载失败
-> - `thread/threadId`（字面量而非变量） → 路由解析崩溃
+> ### 🔗 Second-Level Menu Reply Taps Unified
+> Tapping content in the second-level menu "Replies" list (the red-box area) used to crash on routing literal traps:
+> - `subposts/0` (hardcoded threadId=0) → SubPostsPage load failure
+> - `thread/threadId` (literal instead of variable) → route resolution crash
 >
-> **修复策略：统一改为 `thread/{threadId}?postId={postId}&scrollToReply=true`**
-> 点击回复内容 = 点击主题贴效果，都直达原帖对应楼层。
+> **Fix strategy: uniformly changed to `thread/{threadId}?postId={postId}&scrollToReply=true`**
+> Tapping reply content is now the same as tapping the thread itself — both go straight to the corresponding floor in the original thread.
 
-## 🆕 v4.0.0.34 — 定时签到时钟校准
+## 🆕 v4.0.0.34 — Scheduled Check-In Clock Calibration
 
-> ### ⏰ 跨天顺延机制
-> 此前定时签到偶发漏签，根因在 `initAutoSign` 时间判断逻辑：
-> - 今日目标时刻已过 → 直接不设闹钟（漏签）
-> - 闹钟触发后 reschedule 因毫秒级误差判断为「已过」 → 次日不再预约
+> ### ⏰ Cross-Day Postponement Mechanism
+> Occasional missed scheduled check-ins previously traced back to the `initAutoSign` time judgment logic:
+> - Today's target time already passed → no alarm set at all (missed check-in)
+> - After the alarm fired, reschedule judged it as "already passed" due to millisecond-level error → no appointment for the next day
 >
-> **修复策略：**
-> - 秒 / 毫秒清零，消除判断误差
-> - 目标时刻已过则顺延至次日，闹钟始终有效
-> - 覆盖三处调用：App 启动 / 闹钟 reschedule / 开机重启
+> **Fix strategy:**
+> - Zero out seconds / milliseconds to eliminate judgment error
+> - If the target time has passed, postpone to the next day so the alarm is always valid
+> - Covers all three call sites: app startup / alarm reschedule / boot restart
 >
-> 从此签到到点准时触发，全天候稳定运转。
+> From now on, scheduled check-ins fire on time and run stably around the clock.
 
-## 🆕 v4.0.0.33 — 排序与只读：兜底贯通
+## 🆕 v4.0.0.33 — Sorting and OP-Only: Fallback Fully Wired
 
-> ### 🔄 `forumId` 兜底链路修复
-> ThreadPage 内部有两个 forumId 变量长期混用：
-> - `forumId`（路由参数，收藏页等场景为 null）
-> - `curForumId`（`forumId ?: forum.id` 兜底值）
+> ### 🔄 `forumId` Fallback Chain Fix
+> ThreadPage had two forumId variables long mixed up:
+> - `forumId` (route parameter; null in Favorites and similar scenarios)
+> - `curForumId` (`forumId ?: forum.id` fallback value)
 >
-> 倒序按钮、只看楼主、加载更多、LoadPrevious、onRefresh、onReload、沉浸模式等 **10 处** 都误用了裸 `forumId`，
-> 从收藏页或搜索结果等场景进入帖子时，`forumId=null → forum_id=0`，
-> API 返回异常 → 排序失效。
+> The reverse-order button, OP-only, load-more, LoadPrevious, onRefresh, onReload, immersive mode, and more — **10 places** — all misused the bare `forumId`,
+> so entering a thread from Favorites or Search gave `forumId=null → forum_id=0`,
+> the API returned an error, and sorting failed.
 >
-> **全数迁移至 `curForumId`**，贴吧数据结构加载完成即取到有效吧 ID，排序链路完全打通。
+> **All migrated to `curForumId`**; once the Tieba data structure finishes loading, a valid forum ID is available and the sorting chain is fully connected.
 
-### 📍 倒序浏览功能入口
+### 📍 Where to Find Reverse Browsing
 
-第一步：进入帖子后，点击底部评论栏右侧的 **「⋮」** 菜单按钮：
+Step 1: after entering a thread, tap the **"⋮"** menu button on the right of the bottom comment bar:
 
-![倒序浏览 - 步骤1](docs/images/draft_reverse_step1.png)
+![Reverse browsing - Step 1](docs/images/draft_reverse_step1.png)
 
-第二步：在弹出菜单中找到 **「倒序浏览」** 按钮，点击即生效：
+Step 2: find the **"Reverse Browsing"** button in the popup menu and tap it to take effect:
 
-![倒序浏览 - 步骤2](docs/images/draft_reverse_step2.png)
+![Reverse browsing - Step 2](docs/images/draft_reverse_step2.png)
 
-## 🆕 v4.0.0.32 — 消息回复定位归位
+## 🆕 v4.0.0.32 — Notification Replies Return to Position
 
-> ### 🎯 通知直达原帖上下文
-> 「回复我的」点击通知后，原本尝试直跳楼中楼（SubPostsPage），但通知数据无 `forumId` 字段，
-> SubPostsPage API 调取失败 → 空白页。
+> ### 🎯 Notifications Jump Straight to the Original Thread Context
+> Tapping a notification in "Replies to Me" previously tried to jump directly to the sub-floor (SubPostsPage), but notification data has no `forumId` field,
+> so the SubPostsPage API call failed → blank page.
 >
-> 修复方案：**改为跳转到原帖并自动滚动到对应楼层**。`thread/{threadId}?postId={postId}&scrollToReply=true`
-> 三参数齐备，复用此前的楼层定位能力，一击即中。
+> Fix: **jump to the original thread and auto-scroll to the corresponding floor**. `thread/{threadId}?postId={postId}&scrollToReply=true`
+> with all three parameters present, reusing the earlier floor positioning capability — one tap, right on target.
 >
-> 用户体验：通知点击 → 原帖 → 自动定位到被回复楼层 → 上下文一目了然，告别空白。
+> User experience: notification tap → original thread → auto-scroll to the replied floor → full context at a glance, no more blanks.
 
-## 🆕 v4.0.0.31 — 视频播放链路重构
+## 🆕 v4.0.0.31 — Video Playback Pipeline Refactor
 
-> ### 🎬 双保险打通视频黑盒
-> 贴吧视频链接多为 http 明文，CDN 域名 `bdstatic.com` 未在网络安全白名单，系统层静默拦截 → 视频一片漆黑。
+> ### 🎬 Double Insurance Cracks the Video Black Box
+> Tieba video links are mostly plain http, and the CDN domain `bdstatic.com` was not in the network security allowlist,
+> so the system layer silently intercepted them → pitch-black video.
 >
-> **双保险修复：**
-> - **网络配置层**：`network_security_config.xml` 加入 `bdstatic.com`，明文白名单扩域
-> - **播放器层**：`DefaultVideoPlayerController` 对网络视频源执行 http → https 自动升级
+> **Double insurance fix:**
+> - **Network config layer**: added `bdstatic.com` to `network_security_config.xml`, expanding the plaintext allowlist
+> - **Player layer**: `DefaultVideoPlayerController` auto-upgrades network video sources from http to https
 >
-> 无论 http 还是 https 直链，皆能稳稳播放。小米、红米、三星等主流设备的视频体验一并回归。
+> Whether http or https direct links, everything plays steadily. Video experience on Xiaomi, Redmi, Samsung, and other mainstream devices is restored across the board.
 
-## 🆕 v4.0.0.30 — 长按菜单闪退全清扫
+## 🆕 v4.0.0.30 — Long-Press Menu Crash Full Sweep
 
-> ### 🔪 路由字面量陷阱收网
-> 此前若干次迭代零散埋下 `navigator.navigate("Routes.XXX/$it")` 的笔误——路由常量名被原样当文本拼进 URL，Compose 解析崩溃闪退。
-> 借由一次长按「复制」报错，全项目 grep 排查，**一次性收齐 5 处同类隐患**：
-> - `SubPostsPage.kt` × 2（楼中楼复制入口）
-> - `ThreadPage.kt` × 2（主楼/楼层复制入口）
-> - `ForumThreadListPage.kt` × 1（吧规入口）
+> ### 🔪 Rounding Up the Routing Literal Traps
+> Several past iterations scattered typos of the form `navigator.navigate("Routes.XXX/$it")` — the route constant name was concatenated into the URL as literal text, crashing Compose resolution.
+> Seizing on one long-press "copy" error, the whole project was grep-audited, **collecting 5 similar hazards in one pass**:
+> - `SubPostsPage.kt` × 2 (sub-floor copy entries)
+> - `ThreadPage.kt` × 2 (main floor / floor copy entries)
+> - `ForumThreadListPage.kt` × 1 (forum rules entry)
 >
-> 全数改为 `navigator.navigate("copy_dialog/$it")` 等正确形式。
-> 「复制」从此稳稳落地，再无侧漏。
+> All changed to correct forms like `navigator.navigate("copy_dialog/$it")`.
+> "Copy" now lands firmly, with no side leakage.
 
-## 🆕 v4.0.0.29 — 吧内搜索即时穿透
+## 🆕 v4.0.0.29 — In-Forum Search Instant Penetration
 
-> ### 🔎 侧漏修复：变量字面量陷阱
-> 吧内搜索导航传递原本走的是纯字符串字面量——`forumName` 和 `forumId` 被当作文本原样传递，而非变量求值。
-> 路由收到的是"forumName"二字而非实际吧名，解析崩溃闪退。
-> 单行 `$` 插值修复，变量即时求值，搜索入口回归坚实。
+> ### 🔎 Side Leakage Fix: the Variable Literal Trap
+> In-forum search navigation previously passed pure string literals — `forumName` and `forumId` were passed as literal text rather than variable evaluation.
+> The route received the two characters "forumName" instead of the actual forum name, crashing resolution.
+> A single-line `$` interpolation fix makes variables evaluate immediately, and the search entry is solid again.
 
-## 🆕 v4.0.0.27 — 草稿箱：楼层精准回溯
+## 🆕 v4.0.0.27 — Drafts: Precise Floor Recall
 
-> ### 📝 智能草稿引擎
-> 回帖内容实时自动落盘，退出即存。进入草稿箱一览**吧名 + 内容预览 + 保存时间**，点击直达**原帖对应楼层**——
-> 不再是模糊的碎片，而是精确的上下文瞬间。
+> ### 📝 Smart Draft Engine
+> Reply content auto-saves to disk in real time; exit and it's stored. The drafts list shows **forum name + content preview + save time**, and tapping jumps straight to **the corresponding floor in the original thread** —
+> no longer vague fragments, but a precise moment of context.
 >
-> ### 🔍 层级联动路由修复
-> 楼中楼、回复页、帖子跳转三层路由参数全链路贯通。`forumId` / `postId` / `subPostId` 不再半途丢失，
-> 每次跳转精准命中目标位置。
+> ### 🔍 Hierarchical Linked Routing Fix
+> Sub-floor, reply page, and thread jump — all three layers of route parameters are now fully wired. `forumId` / `postId` / `subPostId` are no longer lost halfway,
+> and every jump lands precisely on the target.
 >
-> ### 📋 应用日志面板
-> 关于页底部「查看日志」→ 实时操作流记录，支持一键复制分享。排障不再靠猜。
+> ### 📋 In-App Log Panel
+> About page → "View Logs" at the bottom → real-time operation stream with one-tap copy & share. No more guessing when troubleshooting.
 
-## 🆕 v4.0.0.19 — 智检更新 + 高优定时签到
+## 🆕 v4.0.0.19 — Smart Update Check + High-Priority Scheduled Check-In
 
-> ### 🔍 智能版本巡检
-> 关于页内置 GitHub Release 探测器，一键对比云端发布。智能清洗构建哈希后缀（`+sha`），精准匹配语义版本号。
-> 发现升级即提供**直链下载**与 **GitHub 入口**双通道——系统浏览器安全跳转，异常链路全程 `try-catch` 守护，杜绝闪退。
+> ### 🔍 Smart Version Patrol
+> A GitHub Release probe is built into the About page for one-tap cloud version comparison. It smartly strips build hash suffixes (`+sha`) and precisely matches semantic version numbers.
+> On finding an upgrade it offers **direct download** and a **GitHub entry** — safe system-browser jumps, with the whole exception path guarded by `try-catch` to eliminate crashes.
 >
-> ### ⏰ 高精度定时闹钟
-> `AlarmManager.setExactAndAllowWhileIdle`（Android 12+）替代旧式 `setRepeating`。
-> 休眠态精准唤醒：即便进程被划掉、设备沉入 Doze，到点系统仍强制拉起签到服务。
-> 签到完毕自动预留次日闹钟，**零后台驻留，全天候准时**。
+> ### ⏰ High-Precision Scheduled Alarm
+> `AlarmManager.setExactAndAllowWhileIdle` (Android 12+) replaces the old `setRepeating`.
+> Precise wake-up from sleep: even if the process is swiped away and the device sinks into Doze, the system still force-raises the check-in service on time.
+> The next day's alarm is automatically reserved once check-in completes — **zero background residency, on time around the clock**.
 
-## 🆕 v4.0.0.16 — 楼中楼修复 + 覆盖安装
+## 🆕 v4.0.0.16 — Sub-Floor Fix + Overwrite Install
 
-- 🏷️ **覆盖安装已就绪** — 签名密钥统一入库，从此无缝更新
-- 🐛 修复楼中楼「查看全部回复」显示空白（路由参数缺失）
+- 🏷️ **Overwrite install is ready** — signing keys are unified in-repo; seamless updates from now on
+- 🐛 Fixed blank display of "View All Replies" in sub-floors (missing route parameters)
 
-## 🆕 v4.0.0.13 — 图片批量下载
+## 🆕 v4.0.0.13 — Batch Image Download
 
-> 🖼️ PhotoView 多选模式：点击多选 → 跨页勾选 → 一键批量保存到相册
+> 🖼️ PhotoView multi-select mode: tap multi-select → pick across pages → save all selected images to the gallery in one tap
 
-## 🆕 v4.0.0.12 — 性能优化
+## 🆕 v4.0.0.12 — Performance Optimizations
 
-- ⚡ 移除阻塞式 `RateLimitInterceptor` / `RetryInterceptor`，恢复 OkHttp 原生重试
-- 🚀 滑动流畅度回归，修复 v4.0.0.5 引入的性能回退
-- 🗑️ 删除未使用的 `OneKeySignInBean` 等临时数据模型
+- ⚡ Removed blocking `RateLimitInterceptor` / `RetryInterceptor`; restored native OkHttp retries
+- 🚀 Scroll smoothness restored, fixing the performance regression introduced in v4.0.0.5
+- 🗑️ Removed unused temporary data models like `OneKeySignInBean`
 
-## 🆕 v4.0.0.11 — 签名密钥统一
+## 🆕 v4.0.0.11 — Unified Signing Key
 
-- 🔧 修复签名密钥不一致导致每次更新需卸载重装的问题
-- ✅ **此版本起，后续所有版本均可直接覆盖安装，无需卸载旧版**
+- 🔧 Fixed inconsistent signing keys forcing an uninstall + reinstall on every update
+- ✅ **From this version on, all subsequent versions can be installed directly as overwrite updates — no need to uninstall the old version**
 
-## 🆕 v4.0.0.10 — 全量签到纪元
+## 🆕 v4.0.0.10 — The Full Check-In Era
 
-> ### ⚡ 全量一键签到
-> 智能分页引擎逐一拉取你所关注的每一个贴吧，**单次运行最高覆盖 3000 个吧**。
-> 告别「官方客户端仅签到前 100 个」的限制，每一个吧都不会被遗漏。
+> ### ⚡ One-Tap Full Check-In
+> The smart pagination engine pulls in every forum you follow, one by one, **covering up to 3000 forums in a single run**.
+> Say goodbye to the official client's "only the first 100 forums" limit — not a single forum is missed.
 >
-> ### 🔋 ⚠️ 重要：请关闭电池优化！
-> 签到过程需要在后台持续运行，**请务必将「贴吧 Lite」的电池优化策略设为「不限制」**，
-> 否则系统可能在签到中途强制休眠进程，导致签到中断。
+> ### 🔋 ⚠️ Important: Please Disable Battery Optimization!
+> The check-in process needs to keep running in the background. **Be sure to set Tieba Lite's battery optimization policy to "Unrestricted"**,
+> otherwise the system may force-sleep the process mid-check-in, interrupting it.
 >
-> **设置路径：** 系统设置 → 应用 → 贴吧 Lite → 电池 → 不限制
+> **Settings path:** System Settings → Apps → Tieba Lite → Battery → Unrestricted
 >
-> *(各品牌手机路径略有差异：小米-应用信息→省电策略→无限制 / 华为-应用启动管理→手动管理 / OPPO-vivo-耗电保护→允许后台运行)*
+> *(Paths vary slightly by brand: Xiaomi - App info → Battery saver → Unrestricted / Huawei - App launch → Manual management / OPPO-vivo - Power consumption protection → Allow background running)*
 
-## 🆕 v4.0.0.5 更新内容
+## 🆕 v4.0.0.5 Release Notes
 
-- 🎮 自适应高刷 — 自动匹配设备最高刷新率
-- 👥 多账号快速切换 — 用户页点头像弹出账号菜单
-- 📐 内容密度选项 — 紧凑 / 标准 / 舒适三种间距
-- 💾 离线缓存 — 断网时自动加载历史帖子
-- 🚀 Compose 性能优化 — Strong Skipping + 稳定性标记
-- 🔧 ProGuard R8 全模式 + ABI 精简
-- 🛡️ API 稳定性增强 — 请求重试 + 频率控制
-- 🖼️ 图片下载提示 — 保存到相册
-- ✍️ 草稿提醒 — 未发送回帖数量显示
-- 📋 签到增强 — 合并双数据源，覆盖更多关注的贴吧
-- 🔧 ProGuard R8 全模式 + ABI 精简
+- 🎮 Adaptive high refresh rate — automatically matches your device's highest refresh rate
+- 👥 Fast multi-account switching — tap the avatar in the user page to pop up the account menu
+- 📐 Content density options — Compact / Standard / Comfortable spacing
+- 💾 Offline cache — automatically loads cached threads when disconnected
+- 🚀 Compose performance optimizations — Strong Skipping + stability markers
+- 🔧 ProGuard R8 full mode + ABI trimming
+- 🛡️ API stability enhancements — request retries + rate limiting
+- 🖼️ Image download prompts — save to gallery
+- ✍️ Draft reminders — unsent reply count display
+- 📋 Check-in enhancements — merges dual data sources, covering more followed forums
 
-## 💡 使用贴士 / Pro Tips
+## 💡 Pro Tips
 
-| 场景 | 建议 |
+| Scenario | Advice |
 |------|------|
-| 🔋 **全量签到** | 务必在系统设置中将本 App 电池优化设为「不限制」，避免后台杀进程导致签到中断 |
-| ⏰ **定时自动签到** | 开启后无需 App 常驻后台，Doze 休眠也会准点唤醒；仅需确保电池策略为非限制 |
-| 📝 **草稿自动保存** | 回复过程中退出即存，草稿箱可随时恢复。新版草稿含完整上下文（吧名+楼层），点击直达 |
-| 🔄 **程序内更新** | 关于页 → 检查更新 → 下载 Release 版 APK，下载后点击通知栏即可安装（无需卸载旧版） |
-| 📋 **排障辅助** | 关于页 → 查看日志 → 右上角复制 → 提交 issue 时附上日志，事半功倍 |
-| 🌐 **多语言** | 完整支持中日韩英四国语界面与文档 |
+| 🔋 **Full check-in** | Be sure to set this app's battery optimization to "Unrestricted" in system settings to avoid background process kills interrupting the check-in |
+| ⏰ **Scheduled auto check-in** | Once enabled, no need to keep the app in the background; Doze sleep still wakes it on time — just ensure the battery policy is unrestricted |
+| 📝 **Draft auto-save** | Exit while replying and it's saved; drafts can be restored anytime. New-version drafts carry full context (forum + floor) and jump straight there on tap |
+| 🔄 **In-app updates** | About page → Check for updates → download the Release APK; after downloading, tap the notification to install (no need to uninstall the old version) |
+| 📋 **Troubleshooting aid** | About page → View logs → copy from the top right → attach logs when filing issues for much faster fixes |
+| 🌐 **Multi-language** | Full UI and documentation in four languages: Chinese, Japanese, Korean, and English |
 
-## 💬 反馈与贡献 / Feedback & Contribution
+## 💬 Feedback & Contribution
 
-🐛 发现 Bug？💡 有好想法？欢迎通过 GitHub Issues 提交：
+🐛 Found a bug? 💡 Have ideas? Submit them via GitHub Issues:
 
 <p align="center">
     <a href="https://github.com/qaqmin09577/TiebaLite/issues">
@@ -432,89 +433,85 @@
     </a>
 </p>
 
-> 提交时请携带**应用日志**（关于页 → 查看日志 → 复制），越详细修复越快。
+> Please include **app logs** when submitting (About page → View logs → Copy) — the more detail, the faster the fix.
 
+## 👨‍💻 Original Author
 
+This project was originally developed and maintained by **[HuanCheng65](https://github.com/HuanCheng65)** until it was archived in 2024.
 
-## 👨‍💻 原作者 / Original Author
+> 🙏 **All original code, architecture design, and core contributions belong to the original author; we express our sincere respect for their hard work.**
 
-本项目由 **[HuanCheng65](https://github.com/HuanCheng65)** 原创开发并维护至 2024 年归档。
-
-> 🙏 **所有原始代码、架构设计和核心贡献均归原作者所有，我们对其辛勤工作表示由衷敬意。**
-
-## 🔗 友情链接
+## 🔗 Related Projects
 
 + [Starry-OvO/aiotieba: Asynchronous I/O Client for Baidu Tieba](https://github.com/Starry-OvO/aiotieba)
-+ [n0099/tbclient.protobuf: 百度贴吧客户端 Protocol Buffers 定义文件合集](https://github.com/n0099/tbclient.protobuf)
++ [n0099/tbclient.protobuf: Baidu Tieba Client Protocol Buffers definitions](https://github.com/n0099/tbclient.protobuf)
 
 ---
 
-## 📋 版本迭代记录 / Version History
+## 📋 Version History
 
-| 版本 / Version | 日期 / Date | 说明 / Description |
+| Version | Date | Description |
 |---|---|---|
-| v4.0.0-beta.1 | 2024-02-02 | 原始版本发布 / Original release by HuanCheng65 |
-| v4.0.0.1 | 2026-06-09 | 文档完善、四国语言声明|
-| v4.0.0.2 | 2026-06-09 | 安全修复、网络安全配置|
-| v4.0.0.3 | 2026-06-09 | CI 修复、构建成功|
-| v4.0.0.4 | 2026-06-12 | AGP 8.5.2 + Gradle 8.7 + 源码修复|
-| v4.0.0.5 | 2026-06-13 | compose-destinations 移除 + Kotlin 2.0.21 + 全面依赖升级 |
-| v4.0.0.6 | 2026-06-14 | 多账号快速切换 + 内容密度 + 离线缓存 |
-| v4.0.0.7 | 2026-06-14 | API 稳定性增强（重试+频率控制）+ 图片下载提示 |
-| v4.0.0.8 | 2026-06-14 | 签到全量升级（首次尝试） |
-| v4.0.0.9 | 2026-06-14 | 签到架构重写 · 分页拉取全量关注吧列表 |
-| v4.0.0.10 | 2026-06-14 | **🎉 全量一键签到 · 3000+ 吧全覆盖** — 分页引擎 + 失败跳过错容 |
-| v4.0.0.11 | 2026-06-15 | 签名密钥统一，从此覆盖安装无需卸载 |
-| v4.0.0.12 | 2026-06-15 | 性能优化 · 移除阻塞拦截器 · 滑动流畅度回归 |
-| v4.0.0.13 | 2026-06-15 | **🖼️ 图片批量下载** — PhotoView 多选 + 一键批量保存 |
-| v4.0.0.15 | 2026-06-15 | keystore 白名单修复 · 覆盖安装启用 |
-| v4.0.0.16 | 2026-06-15 | 楼中楼空白修复 · 路由参数补全 |
-| v4.0.0.19 | 2026-06-17 | **🔍 智检更新 + ⏰ 定时签到** — setExactAndAllowWhileIdle + 直链 · Doze 可唤醒 |
-| v4.0.0.22 | 2026-06-17 | **📦 Release 通道修正** — 程序内升级下载正式版 APK 而非 Debug 调试包 |
-| v4.0.0.24 | 2026-06-17 | **📝 草稿箱完整实现** — Draft 模型扩展 · 列表浏览 · 点击跳转 |
-| v4.0.0.27 | 2026-06-17 | **🎯 草稿定位 + 日志面板** — 点击直达对应楼层 · 关于页实时日志窗口 |
-| v4.0.0.29 | 2026-08-16 | 🐛 **吧内搜索闪退修复** — 变量插值补漏 · 一字修，全局稳 |
-| v4.0.0.30 | 2026-08-16 | **🔪 路由字面量陷阱收网** — 全项目 grep 排查 5 处 Routes. 笔误 · 长按复制回归 |
-| v4.0.0.31 | 2026-08-16 | **🎬 视频播放修复** — bdstatic 白名单 + 播放器 http→https 双保险 |
-| v4.0.0.32 | 2026-08-16 | **🎯 通知定位归位** — 「回复我的」改跳原帖 · 自动滚到对应楼层 |
-| v4.0.0.33 | 2026-08-16 | **🔄 排序兜底贯通** — ThreadPage 10 处 forumId → curForumId · 倒序回归 |
-| v4.0.0.34 | 2026-08-16 | **⏰ 定时签到时钟校准** — 跨天顺延机制 + 毫秒清零 · 三处调用统一 |
-| v4.0.0.35 | 2026-08-16 | **🎯 回帖点击回归** — 个人中心入口启用 + 二级菜单回帖点击统一跳转 |
-| v4.0.0.36 | 2026-08-16 | **🎯 回帖直达自己主页** — account.uid 修正 + user/{uid}?tab=1 定位 |
-| v4.0.0.37 | 2026-08-16 | 🛠️ **编译修复** — initialTab 三级函数参数链补齐 |
-| v4.0.0.38 | 2026-08-30 | 🚀 **启动稳定性重构** — LocalNavigator 顶层注入根治冷启动闪退 · 收藏偏好贯通 · 合入社区贡献 #15 |
-| v4.0.0.39 | 2026-08-31 | 🛡️ **特殊字符路由加固** — 复制含链接内容/外链跳转闪退根治 · 六处调用点统一 Uri.encode |
-| v4.0.0.40 | 2026-08-31 | 🧭 **举报跳转修正 + 手势避让** — 举报成功网页跳转恢复 · 底栏避让手势热区 · 误触根治 |
-| v4.0.0.41 | 2026-09-01 | 🖐️ **手势热区二次加固** — 双零 inset 时 28dp 确定性兜底 · 「更多」弹层避让补全 |
-| v4.0.0.42 | 2026-09-02 | 👍 **点赞列表完整呈现** — 「收到的赞」空白根治 · 条目直达帖子/主页 · 空态兜底与去重 |
-| v4.0.0.43 | 2026-09-05 | 💬 **楼层回复定位修正** — 楼层回复直达楼中楼 · 回帖页状态栏避让 · 三链路真机回归 |
-| v4.0.0.44 | 2026-09-07 | 🚀 **启动页自定义 + 楼中楼图片占位** — 启动页四选一 · 隐藏动态联动回退 · 带图评论不丢失 · 大图查看 |
-| v4.0.0.45 | 2026-09-08 | 🎯 **楼中楼回复绑定修正** — 回复对象精准锁定 · 特殊吧名路由加固 |
-| v4.0.0.46 | 2026-09-08 | 🖼️ **图片查看沉浸过渡 + 滚动位置记忆** — 状态栏平滑过渡 · 分享面板沉浸保持 · 返回停在原位置 |
-| v4.0.0.47 | 2026-09-09 | 📱 **主页面底栏导航条适配** — 暗黑模式重叠修复 · 背景延伸安全区 · 手势热区兜底 |
-| v4.0.0.48 | 2026-09-10 | 🖼️ **楼中楼带图评论完整渲染** — 接口版本号升级 · 真图渲染+点击大图 · 未知类型日志兜底 |
-| v4.0.0.49 | 2026-09-09 | 🔥 **热榜话题卡片可点击** — 话题卡跳转搜索 · 特殊字符无损 · 裸导航/deepLink 无回归 |
-| v4.0.0.50 | 2026-09-11 | 🧭 **话题榜完整列表页可点击** — 「更多话题」入口补齐 · 跳转搜索过渡方案 · 全链路无死区 |
-| v4.0.0-ai.50 | 2026-09-16 | 🧪 **ai 体验通道首发** — 话题榜完整列表页可点击 · 体验版独立版本线，稳定通道不受影响 |
-| v4.0.0-ai.51 | 2026-09-22 | 🧪 **CI 首个全绿预发布** — runner 补装 Android SDK · jitpack TLS 重试 · ButterKnife 残留移除 · 发布改 Codeberg 原生 API |
-| v4.0.52 | 2026-09-23 | **🔢 语义化版本系列** — 版本线切换为 v4.0.N · stable 通道按 releases 列表筛选最新正式版 |
-| v4.0.53 | 2026-10-04 | **🛠️ Mac 远程构建线** — 构建迁移至 Mac 构建机（CI 波动期的稳定产出线）· 签名与本地逐位一致 |
-| v4.0.54 | 2026-10-04 | **🏠 迁移新账号 qaqmin09577** — 默认更新渠道切换 GitHub · Codeberg 转备用渠道 · 双轨发布 · 覆盖更新无损 |
-| [▶ 最新 Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |
+| v4.0.0-beta.1 | 2024-02-02 | Original release by HuanCheng65 |
+| v4.0.0.1 | 2026-06-09 | Documentation improvements, four-language disclaimer |
+| v4.0.0.2 | 2026-06-09 | Security fix, network security config |
+| v4.0.0.3 | 2026-06-09 | CI fix, build success |
+| v4.0.0.4 | 2026-06-12 | AGP 8.5.2 + Gradle 8.7 + source fixes |
+| v4.0.0.5 | 2026-06-13 | compose-destinations removal + Kotlin 2.0.21 + full dependency upgrades |
+| v4.0.0.6 | 2026-06-14 | Fast multi-account switching + content density + offline cache |
+| v4.0.0.7 | 2026-06-14 | API stability enhancements (retry + rate limiting) + image download prompts |
+| v4.0.0.8 | 2026-06-14 | Full check-in upgrade (first attempt) |
+| v4.0.0.9 | 2026-06-14 | Check-in architecture rewrite · paginated fetching of the full followed forum list |
+| v4.0.0.10 | 2026-06-14 | **🎉 One-Tap Full Check-In · 3000+ Forums Covered** — pagination engine + failure skip tolerance |
+| v4.0.0.11 | 2026-06-15 | Unified signing key; overwrite installs without uninstting from now on |
+| v4.0.0.12 | 2026-06-15 | Performance optimizations · removed blocking interceptors · scroll smoothness restored |
+| v4.0.0.13 | 2026-06-15 | **🖼️ Batch Image Download** — PhotoView multi-select + one-tap save |
+| v4.0.0.15 | 2026-06-15 | keystore allowlist fix · overwrite install enabled |
+| v4.0.0.16 | 2026-06-15 | Sub-floor blank fix · route parameter completion |
+| v4.0.0.19 | 2026-06-17 | **🔍 Smart Update Check + ⏰ Scheduled Check-In** — setExactAndAllowWhileIdle + direct links · Doze-wakeable |
+| v4.0.0.22 | 2026-06-17 | **📦 Release Channel Fix** — in-app upgrades now download the official APK instead of the debug build |
+| v4.0.0.24 | 2026-06-17 | **📝 Full Draft Box Implementation** — Draft model extension · list browsing · tap to jump |
+| v4.0.0.27 | 2026-06-17 | **🎯 Draft Positioning + Log Panel** — tap straight to the corresponding floor · real-time log window on the About page |
+| v4.0.0.29 | 2026-08-16 | 🐛 **In-Forum Search Crash Fix** — variable interpolation gap fixed · one character changed, global stability |
+| v4.0.0.30 | 2026-08-16 | **🔪 Route Literal Traps Rounded Up** — 5 `Routes.` typos found project-wide via grep · long-press copy restored |
+| v4.0.0.31 | 2026-08-16 | **🎬 Video Playback Fix** — bdstatic allowlist + player http→https double insurance |
+| v4.0.0.32 | 2026-08-16 | **🎯 Notification Positioning Restored** — "Replies to Me" jumps to the original thread · auto-scroll to the corresponding floor |
+| v4.0.0.33 | 2026-08-16 | **🔄 Sorting Fallback Fully Wired** — 10 `forumId` → `curForumId` sites in ThreadPage · reverse order restored |
+| v4.0.0.34 | 2026-08-16 | **⏰ Scheduled Check-In Clock Calibration** — cross-day postponement + millisecond zeroing · three call sites unified |
+| v4.0.0.35 | 2026-08-16 | **🎯 Reply Taps Restored** — profile entry enabled + second-level menu reply taps jump uniformly |
+| v4.0.0.36 | 2026-08-16 | **🎯 Replies Go Straight to Your Profile** — account.uid fix + user/{uid}?tab=1 positioning |
+| v4.0.0.37 | 2026-08-16 | 🛠️ **Build Fix** — initialTab three-level function parameter chain completed |
+| v4.0.0.38 | 2026-08-30 | 🚀 **Startup Stability Refactor** — top-level LocalNavigator injection root-fixes cold-start crashes · favorites preferences wired · community contribution #15 merged |
+| v4.0.0.39 | 2026-08-31 | 🛡️ **Special Character Routing Hardening** — crash on copying link content / external link jumps root-fixed · Uri.encode unified across six call sites |
+| v4.0.0.40 | 2026-08-31 | 🧭 **Report Jump Fix + Gesture Avoidance** — report success web jump restored · bottom bar gesture hot zone avoidance · mis-taps root-fixed |
+| v4.0.0.41 | 2026-09-01 | 🖐️ **Second Round of Gesture Hot Zone Hardening** — deterministic 28dp fallback when both insets are zero · "More" popup avoidance completed |
+| v4.0.0.42 | 2026-09-02 | 👍 **Full Likes List** — "Received Likes" blank root-fixed · items jump to threads/profiles · empty-state fallback and deduplication |
+| v4.0.0.43 | 2026-09-05 | 💬 **Floor Reply Positioning Fix** — floor replies go straight to sub-floors · reply page status bar avoidance · on-device regression of three paths |
+| v4.0.0.44 | 2026-09-07 | 🚀 **Custom Startup Page + Sub-Floor Image Placeholders** — four startup page choices · linked fallback for hiding feed · image comments never lost · tap-to-enlarge |
+| v4.0.0.45 | 2026-09-08 | 🎯 **Sub-Floor Reply Binding Fix** — reply targets precisely locked · special forum name routing hardened |
+| v4.0.0.46 | 2026-09-08 | 🖼️ **Immersive Image Transitions + Scroll Position Memory** — smooth status bar transitions · immersive share panel · return to where you were |
+| v4.0.0.47 | 2026-09-09 | 📱 **Home Bottom Bar Navigation Adaptation** — dark mode overlap fixed · background extends into safe area · gesture hot zone fallback |
+| v4.0.0.48 | 2026-09-10 | 🖼️ **Full Rendering of Image Comments in Sub-Floors** — API version upgrade · real image rendering + tap-to-enlarge · unknown type logging fallback |
+| v4.0.0.49 | 2026-09-09 | 🔥 **Hot Topic Cards Now Clickable** — topic cards jump to search · special characters lossless · no regression in bare navigation / deepLink |
+| v4.0.0.50 | 2026-09-11 | 🧭 **Full Topic List Page Now Clickable** — "More Topics" entry completed · search jump transition · no dead zones end to end |
+| v4.0.0-ai.50 | 2026-09-16 | 🧪 **First ai Preview Channel Release** — full topic list page clickable · preview channel on its own version line, stable channel unaffected |
+| v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
+| v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
+| v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.54 | 2026-10-04 | **🏠 Migrated to New Account qaqmin09577** — default update channel switched to GitHub · Codeberg becomes fallback · dual-track publishing · overwrite updates unaffected |
+| [▶ Latest Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← Download APK here** |
 
 ---
 
-## 🛠️ 构建说明 / Build Instructions
+## 🛠️ Build Instructions
 
-### 环境要求 / Prerequisites
+### Prerequisites
 
 - **JDK 17+**
 - **Android SDK** with **compileSdk 34**
-- Android Studio (推荐 / Recommended)
+- Android Studio (recommended)
 
-### 签名配置 / Signing Configuration
-
-创建 `keystore.properties` 文件用于 Release 签名配置：
+### Signing Configuration
 
 Create a `keystore.properties` file for release signing:
 
@@ -525,25 +522,23 @@ keyAlias=your_key_alias
 keyPassword=your_key_password
 ```
 
-> ⚠️ **注意 / Note:** 请勿将 `keystore.properties` 文件提交到版本控制系统。/ Do NOT commit the `keystore.properties` file to version control.
+> ⚠️ **Note:** Do NOT commit the `keystore.properties` file to version control.
 
-### 构建命令 / Build Commands
+### Build Commands
 
 ```bash
-# Debug 构建 / Debug Build
+# Debug build
 ./gradlew assembleDebug
 
-# Release 构建 / Release Build
+# Release build
 ./gradlew assembleRelease
 ```
-
-构建产物位于 `app/build/outputs/apk/` 目录。
 
 Build outputs are located in the `app/build/outputs/apk/` directory.
 
 ---
 
-## ⚠️ 免责声明 / Disclaimer
+## ⚠️ Disclaimer
 
 <details>
 <summary>🇨🇳 中文</summary>
@@ -560,7 +555,7 @@ Build outputs are located in the `app/build/outputs/apk/` directory.
 
 1. 本ソフトウェアは**非公式**の贴吧クライアントであり、百度社とは一切の関係がありません。
 2. 本ソフトウェアおよびソースコードは**学習・交流のみを目的としており、商業利用は厳禁**です。
-3. 本ソフトウェアの使用により生じた一切の結果は、使用者自身が責任を負います。
+3. 本ソフトウェアの使用により生じる一切の結果は、使用者自身が責任を負います。
 4. 本ソフトウェアは機能の完全性と安定性を保証するものではありません。
 
 </details>
@@ -569,8 +564,8 @@ Build outputs are located in the `app/build/outputs/apk/` directory.
 <summary>🇰🇷 한국어</summary>
 
 1. 본 소프트웨어는 **비공식**贴吧 클라이언트이며, 바이두와는 아무런 관련이 없습니다.
-2. 본 소프트웨어 및 소스코드는 **학습 및 교류 목적으로만 사용되며, 상업적 사용은 엄격히 금지**됩니다.
-3. 본 소프트웨어 사용으로 발생한 모든 결과는 사용자가 책임집니다.
+2. 본 소프트웨어およびソースコード는 **학습 및 교류 목적으로만 사용되며, 상적 사용은 엄격히 금지**됩니다.
+3. 본 소프트웨어의 사용으로 인해 발생하는 모든 결과는 사용자가 책임을 집니다.
 4. 본 소프트웨어는 기능의 완전성과 안정성을 보장하지 않습니다.
 
 </details>
@@ -579,7 +574,7 @@ Build outputs are located in the `app/build/outputs/apk/` directory.
 <summary>🇺🇸 English</summary>
 
 1. This software is an **unofficial** Tieba client and is not affiliated with Baidu, Inc.
-2. This software and source code are **for learning and communication purposes only. Commercial use is strictly prohibited**.
+2. This software and its source code are **for learning and communication purposes only. Commercial use is strictly prohibited**.
 3. All consequences arising from the use of this software are borne by the user.
 4. This software does not guarantee the completeness and stability of its features.
 
@@ -588,5 +583,5 @@ Build outputs are located in the `app/build/outputs/apk/` directory.
 ---
 
 <p align="center">
-    <sub>原作者 / Original Author: <a href="https://github.com/HuanCheng65">HuanCheng65</a> | 许可证 / License: GPL v3</sub>
+    <sub>Original Author: <a href="https://github.com/HuanCheng65">HuanCheng65</a> | License: GPL v3</sub>
 </p>
