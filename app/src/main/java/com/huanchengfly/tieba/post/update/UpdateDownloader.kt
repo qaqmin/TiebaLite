@@ -2,6 +2,7 @@ package com.huanchengfly.tieba.post.update
 
 import android.util.Log
 import com.huanchengfly.tieba.post.BuildConfig
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -64,9 +65,13 @@ object UpdateDownloader {
      * 平台只有预发布时该端点 404（v4.0.0-ai.51 发布时实测）；列表筛选两端行为一致。
      * App 侧仍二次剔除 ai tag（GitHub 的 ai release prerelease=false，只按
      * isPrerelease 筛会漏，该护栏是 stable/ai 通道分离的最后防线）。
+     *
+     * [cacheDir] 非空时启用 ETag 条件请求：GitHub 匿名 API 限额 60 次/小时/IP，
+     * 命中 304 的请求不计入限额（GitHub 官方行为），可显著降低用户撞 403 的概率；
+     * Codeberg (Forgejo) 同样支持 ETag。403/网络失败仍返回 null，由调用方回退备用渠道。
      */
-    fun fetchStableRelease(root: String = apiRoot): GitHubRelease? {
-        val json = httpGet("${root.trimEnd('/')}/releases?per_page=10") ?: return null
+    fun fetchStableRelease(root: String = apiRoot, cacheDir: File? = null): GitHubRelease? {
+        val json = httpGetConditional("${root.trimEnd('/')}/releases?per_page=10", cacheDir) ?: return null
         return pickLatestStable(GitHubRelease.fromJsonArray(json))
     }
 
@@ -76,9 +81,9 @@ object UpdateDownloader {
      * 真实 ai release 的 prerelease=false，按 isPrerelease 筛会把它滤空、
      * 两通道同时空转（P0-2 实测）。版本解析失败与 stable tag 由 [pickLatestAi] 统一剔除。
      */
-    fun fetchLatestAiRelease(root: String = apiRoot): GitHubRelease? {
+    fun fetchLatestAiRelease(root: String = apiRoot, cacheDir: File? = null): GitHubRelease? {
         // trimEnd('/')：mockRoot/自定义根尾带斜杠时防 "$root/..." 产生 // 双斜杠 404
-        val json = httpGet("${root.trimEnd('/')}/releases?per_page=10") ?: return null
+        val json = httpGetConditional("${root.trimEnd('/')}/releases?per_page=10", cacheDir) ?: return null
         return pickLatestAi(GitHubRelease.fromJsonArray(json))
     }
 
@@ -164,8 +169,84 @@ object UpdateDownloader {
         }
     }
 
+    /**
+     * 带 ETag 条件请求的 GET：[cacheDir] 为空时退化为普通 GET。
+     * 缓存按 URL 哈希落盘（etag + body 成对），304 时直接复用缓存 body——
+     * GitHub 明确 304 不计入匿名限额，Forgejo 同样支持 ETag。
+     */
+    private fun httpGetConditional(url: String, cacheDir: File?): String? {
+        if (cacheDir == null) return httpGet(url)
+        return try {
+            val cached = readListingCache(cacheDir, url)
+            val conn = openConnection(url) ?: return null
+            if (cached != null) conn.setRequestProperty("If-None-Match", cached.etag)
+            val code = conn.responseCode
+            val freshBody =
+                if (code in 200..299) conn.inputStream.use { it.bufferedReader().readText() } else null
+            val resolved = resolveListingBody(code, cached, freshBody)
+            if (resolved == null && code != 304) {
+                Log.w(TAG, "HTTP $code for $url")
+            }
+            if (code in 200..299 && freshBody != null) {
+                val etag = conn.getHeaderField("ETag")
+                if (!etag.isNullOrBlank()) writeListingCache(cacheDir, url, etag, freshBody)
+            }
+            resolved
+        } catch (e: Exception) {
+            Log.w(TAG, "httpGetConditional failed: $e")
+            null
+        }
+    }
+
+    private fun listingCacheFile(cacheDir: File, url: String): File {
+        val digest = MessageDigest.getInstance("MD5")
+            .digest(url.toByteArray()).joinToString("") { "%02x".format(it) }
+        return File(cacheDir, "update_listing_$digest.json")
+    }
+
+    private fun readListingCache(cacheDir: File, url: String): CachedListing? {
+        return try {
+            val f = listingCacheFile(cacheDir, url)
+            if (!f.isFile) return null
+            val obj = JSONObject(f.readText())
+            val etag = obj.optString("etag").takeIf { it.isNotBlank() } ?: return null
+            val body = obj.optString("body").takeIf { it.isNotBlank() } ?: return null
+            CachedListing(etag, body)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun writeListingCache(cacheDir: File, url: String, etag: String, body: String) {
+        try {
+            cacheDir.mkdirs()
+            val obj = JSONObject()
+            obj.put("etag", etag)
+            obj.put("body", body)
+            listingCacheFile(cacheDir, url).writeText(obj.toString())
+        } catch (e: Exception) {
+            Log.w(TAG, "writeListingCache failed: $e")
+        }
+    }
+
     private const val DEFAULT_BUFFER_SIZE = 8192
 }
+
+/** ETag 条件请求的缓存条目（etag 与响应体成对落盘）。 */
+internal data class CachedListing(val etag: String, val body: String)
+
+/**
+ * 条件请求体决策（纯函数，可 JVM 单测）：
+ * - 304 且有缓存 → 复用缓存 body（不计入平台匿名限额）；
+ * - 2xx → 用新拉取的 body（ETag 由调用方落盘）；
+ * - 其余（403 限额 / 429 / 5xx / 网络异常经上层转 null）→ null，调用方回退备用渠道。
+ */
+internal fun resolveListingBody(code: Int, cached: CachedListing?, freshBody: String?): String? =
+    when {
+        code == 304 && cached != null -> cached.body
+        code in 200..299 -> freshBody
+        else -> null
+    }
 
 /**
  * ai 通道候选集选版（生产侧纯函数，可 JVM 单测）：

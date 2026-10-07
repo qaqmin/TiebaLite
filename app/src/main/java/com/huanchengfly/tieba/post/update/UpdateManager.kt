@@ -119,10 +119,11 @@ class UpdateManager @Inject constructor(
      */
     private fun fetchLatest(origin: UpdateOrigin): GitHubRelease? {
         val root = mockRootOverride() ?: UpdateDownloader.rootFor(origin)
+        // cacheDir 启用 ETag 条件请求：304 不计入 GitHub 匿名限额（60 次/小时/IP）
         return if (VersionCompat.channelOf(BuildConfig.VERSION_NAME) == UpdateChannel.AI) {
-            UpdateDownloader.fetchLatestAiRelease(root)
+            UpdateDownloader.fetchLatestAiRelease(root, context.cacheDir)
         } else {
-            UpdateDownloader.fetchStableRelease(root)
+            UpdateDownloader.fetchStableRelease(root, context.cacheDir)
         }
     }
 

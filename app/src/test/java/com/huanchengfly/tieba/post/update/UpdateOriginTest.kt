@@ -80,4 +80,43 @@ class UpdateOriginTest {
         assertNull(pickLatestStable(listOf(rel("garbage-tag"))))
         assertNull(pickLatestStable(listOf(rel("v4.0.0-ai.1", prerelease = true))))
     }
+
+    // ---- ETag 条件请求决策（resolveListingBody）----
+
+    @Test
+    fun `conditional 304 with cache reuses cached body`() {
+        val cached = CachedListing("\"etag-v1\"", "[{\"tag_name\":\"v4.0.54\"}]")
+        assertEquals(cached.body, resolveListingBody(304, cached, null))
+    }
+
+    @Test
+    fun `conditional 200 uses fresh body`() {
+        val fresh = "[{\"tag_name\":\"v4.0.55\"}]"
+        assertEquals(fresh, resolveListingBody(200, null, fresh))
+    }
+
+    @Test
+    fun `conditional 200 prefers fresh body over stale cache`() {
+        val cached = CachedListing("\"etag-v1\"", "old-body")
+        assertEquals("new-body", resolveListingBody(200, cached, "new-body"))
+    }
+
+    @Test
+    fun `conditional 304 without cache yields null`() {
+        assertNull(resolveListingBody(304, null, null))
+    }
+
+    @Test
+    fun `conditional 403 rate limit yields null for fallback`() {
+        // GitHub 匿名限额 60 次/小时/IP：403 时必须返回 null 让调用方回退备用渠道
+        assertNull(resolveListingBody(403, null, null))
+        assertNull(resolveListingBody(403, CachedListing("\"e\"", "body"), null))
+    }
+
+    @Test
+    fun `conditional 429 and 5xx yield null`() {
+        assertNull(resolveListingBody(429, null, null))
+        assertNull(resolveListingBody(500, null, null))
+        assertNull(resolveListingBody(502, null, null))
+    }
 }
