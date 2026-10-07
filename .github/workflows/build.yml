@@ -1,19 +1,26 @@
 name: Build Release APK
 
-# 触发策略：仅 workflow_dispatch（手动）——按项目约定不使用 push/tag 自动触发，
-# 避免频繁消耗 GitHub Actions。正式发布仍走 Mac 构建机 + 手动发布流程；
-# 本工作流服务于「远程本地双验证」：CI 产物与 Mac/本地产物比对证书指纹后确认一致。
+# 触发策略：workflow_dispatch（手动验证）+ tag 推送（v*）自动构建并发布。
+# 不挂分支 push 触发——按约定避免频繁消耗 GitHub Actions；tag 推送只在发版时发生
+# （一次 release ≈ 一次 10-15 分钟构建，公开仓库 Actions 时长免费，对 5000 次/小时
+# 的 API 配额消耗可忽略）。
 #
-# 与 .forgejo/workflows/build-ci.yml（Codeberg 线）的关系：同一构建逻辑的两个宿主，
-# Codeberg 线保留自动发布能力（tag 触发），本线只做构建验证。
+# 双宿主分工：GitHub 线 = tag 自动构建 + 自动发布（release 用自动注入的
+# GITHUB_TOKEN，无需任何 Secret——签名 keystore 本就在仓库内）；
+# Mac 构建机线 = 验证/兜底产出；Codeberg 线保留但暂不使用
+# （其 runner 有 10 分钟硬杀，等基础设施恢复）。
 
 on:
   workflow_dispatch:
+  push:
+    tags: ['v*']
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,3 +94,28 @@ jobs:
           name: release-apk
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      # 自动发布（仅 tag 触发）：gh CLI 预装在 runner，凭据用自动注入的 GITHUB_TOKEN。
+      # 不删旧 release——已存在则更新说明并 clobber 覆盖资产，避免"删了建不回"的半程状态。
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          # 发布说明：从 AI_CHANGELOG.md 提取本版中文段落（与 Codeberg 线同源）
+          NOTES=$(awk -v tag="$TAG" 'index($0, "## " tag " ") == 1 || $0 == "## " tag {found=1; next} found && index($0, "## ") == 1 {exit} found {print}' AI_CHANGELOG.md)
+          CN=$(printf '%s\n' "$NOTES" | awk 'index($0,"### ")==1 && /中文/{found=1; next} index($0,"### ")==1 {found=0} found')
+          [ -n "$CN" ] || CN="TiebaLite $TAG"
+          printf '%s\n' "$CN" > notes.md
+          # ai 体验版标 prerelease
+          PRERELEASE=""
+          case "$TAG" in *-ai*) PRERELEASE="--prerelease";; esac
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" --clobber
+            gh release edit "$TAG" --title "$TAG" --notes-file notes.md $PRERELEASE
+          else
+            gh release create "$TAG" "$APK" --title "$TAG" --notes-file notes.md --latest $PRERELEASE
+          fi
+          echo "published: https://github.com/qaqmin09577/TiebaLite/releases/tag/$TAG"
