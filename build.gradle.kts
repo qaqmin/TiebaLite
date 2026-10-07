@@ -14,4 +14,7 @@ plugins {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
+    // 必须连同各子模块的 buildDir 一起删：只删根目录会让 app/build/outputs 下的
+    // 历史 APK 残留，被构建脚本的产物收集（find *.apk）扫进来，混进后续版本的产物
+    subprojects.forEach { delete(it.buildDir) }
 }
