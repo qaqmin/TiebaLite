@@ -86,6 +86,14 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.55 — Update Check Hardening · Cleaner Builds
+
+> ### 🔄 Smarter Update Checks
+> Update checks now use ETag conditional requests — 304 responses don't count against GitHub's anonymous rate limit (60/hour/IP), so far fewer users will hit 403s; failures still fall back to the Codeberg mirror automatically.
+>
+> ### 🧹 Cleaner Builds
+> Gradle's clean task now wipes every module's build directory (previously only the root's), so APKs from earlier builds can no longer leak into release artifacts.
+
 ## 🆕 v4.0.54 — Account Migration · GitHub as Primary Channel
 
 > ### 🏠 New Home: qaqmin09577/TiebaLite
@@ -498,6 +506,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.55 | 2026-10-07 | **🔄 Update Check Hardening** — ETag conditional requests (304s bypass GitHub's anonymous limit) + automatic 403 fallback · clean task fix (stale APKs no longer leak into artifacts) |
 | v4.0.54 | 2026-10-04 | **🏠 Migrated to New Account qaqmin09577** — default update channel switched to GitHub · Codeberg becomes fallback · dual-track publishing · overwrite updates unaffected |
 | [▶ Latest Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← Download APK here** |
 
