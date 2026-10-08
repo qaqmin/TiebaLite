@@ -34,6 +34,8 @@
 > 本项目已整体迁移至新账号 **[qaqmin09577](https://github.com/qaqmin09577/TiebaLite)**；
 > Codeberg 镜像（min09577/TiebaLite）继续同步更新，作为备用更新渠道。
 > 应用内更新检测的默认渠道已切换为 GitHub，旧版本用户仍可正常收到更新推送。
+>
+> 📌 **账号牺牲记录（2026-10-07）**：本项目的 GitHub 账号已两度被封——原账号 **min09577** 与第一次迁移用的 **qaqmin09577** 先后因不可抗拒原因被封禁（仓库均 404）。这是两名牺牲的账号，特此铭记。项目现存身于最新的 GitHub 账号 **[qaqmin](https://github.com/qaqmin/TiebaLite)** 与 Codeberg 镜像；旧版本用户的应用内更新不受影响（主渠道失败时会自动回退备用渠道）。
 
 ---
 

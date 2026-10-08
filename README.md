@@ -34,6 +34,8 @@
 > This project has fully migrated to the new account **[qaqmin09577](https://github.com/qaqmin09577/TiebaLite)**;
 > the Codeberg mirror (min09577/TiebaLite) continues to sync and serve as a fallback update channel.
 > The default in-app update channel has switched to GitHub; users on older versions can still receive updates as usual.
+>
+> 📌 **Fallen Accounts (2026-10-07)**: This project's GitHub accounts have now been banned twice — the original **min09577** and the first migration account **qaqmin09577** were both banned for reasons beyond our control (all repositories return 404). These are two sacrificed accounts, recorded here in memoriam. The project now lives on the newest GitHub account **[qaqmin](https://github.com/qaqmin/TiebaLite)** and the Codeberg mirror; users on older versions are unaffected (update checks fall back to the mirror channel automatically).
 
 ---
 
