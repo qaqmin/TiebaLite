@@ -1,5 +1,15 @@
 # AI_CHANGELOG
 
+## v4.0.56
+
+### 🇨🇳 中文
+
+更新渠道迁移至新账号。
+
+- 变更：应用内更新检测的 GitHub 渠道已指向新账号 qaqmin/TiebaLite（原 qaqmin09577 账号被封）；Codeberg 备用渠道不变
+- 变更：README 下载入口、徽章与 Issues 链接同步更新至新账号
+- 说明：两个旧 GitHub 账号（min09577、qaqmin09577）先后被封，已在 README 维护者近况中记录在案
+
 ## v4.0.55
 
 ### 🇨🇳 中文

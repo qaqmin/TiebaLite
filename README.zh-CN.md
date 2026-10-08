@@ -88,6 +88,12 @@
 
 > **⚠️ 声明：** 本软件及源码仅供学习交流使用，严禁用于商业用途。与百度公司无关。
 
+## 🆕 v4.0.56 — 更新渠道迁移至新账号
+
+> ### 🔀 渠道迁移
+> 应用内更新检测的 GitHub 渠道已指向新账号 **qaqmin/TiebaLite**（原 qaqmin09577 账号被封）；
+> Codeberg 备用渠道不变。README 下载入口、徽章与 Issues 链接同步更新至新账号。
+
 ## 🆕 v4.0.55 — 更新检查加固 · 构建产物更干净
 
 > ### 🔄 更聪明的更新检查
@@ -509,6 +515,7 @@
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **CI 首个全绿预发布** — runner 补装 Android SDK · jitpack TLS 重试 · ButterKnife 残留移除 · 发布改 Codeberg 原生 API |
 | v4.0.52 | 2026-09-23 | **🔢 语义化版本系列** — 版本线切换为 v4.0.N · stable 通道按 releases 列表筛选最新正式版 |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac 远程构建线** — 构建迁移至 Mac 构建机（CI 波动期的稳定产出线）· 签名与本地逐位一致 |
+| v4.0.56 | 2026-10-07 | **🔀 更新渠道迁移** — GitHub 更新渠道已指向 qaqmin/TiebaLite（原账号被封）· README 链接同步更新 |
 | v4.0.55 | 2026-10-07 | **🔄 更新检查加固** — ETag 条件请求（304 不计入匿名限额）+ 403 自动回退 · clean 修复（stale APK 不再混入产物） |
 | v4.0.54 | 2026-10-04 | **🏠 迁移新账号 qaqmin09577** — 默认更新渠道切换 GitHub · Codeberg 转备用渠道 · 双轨发布 · 覆盖更新无损 |
 | [▶ 最新 Release](https://github.com/qaqmin/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |

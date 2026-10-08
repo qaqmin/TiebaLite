@@ -88,6 +88,12 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.56 — Update Channel Migrated to the New Account
+
+> ### 🔀 Channel Migration
+> The in-app update check's GitHub channel now points at the new account **qaqmin/TiebaLite** (the previous account qaqmin09577 was banned); the Codeberg fallback channel is unchanged.
+> README download links, badges, and the Issues entry have been updated to the new account as well.
+
 ## 🆕 v4.0.55 — Update Check Hardening · Cleaner Builds
 
 > ### 🔄 Smarter Update Checks
@@ -508,6 +514,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.56 | 2026-10-07 | **🔀 Update Channel Migrated** — GitHub update channel now points at qaqmin/TiebaLite (previous account banned) · README links updated to match |
 | v4.0.55 | 2026-10-07 | **🔄 Update Check Hardening** — ETag conditional requests (304s bypass GitHub's anonymous limit) + automatic 403 fallback · clean task fix (stale APKs no longer leak into artifacts) |
 | v4.0.54 | 2026-10-04 | **🏠 Migrated to New Account qaqmin09577** — default update channel switched to GitHub · Codeberg becomes fallback · dual-track publishing · overwrite updates unaffected |
 | [▶ Latest Release](https://github.com/qaqmin/TiebaLite/releases/latest) | | **← Download APK here** |
