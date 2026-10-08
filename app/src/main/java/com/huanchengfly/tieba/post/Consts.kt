@@ -22,8 +22,8 @@ object IntentConfig {
  * 项目溯源信息（内部保留，请勿在 UI 中引用）
  */
 object ProjectSignature {
-    const val MAINTAINER = "qaqmin09577"
-    const val REPO_URL = "https://github.com/qaqmin09577/TiebaLite"
-    const val PROFILE_URL = "https://github.com/qaqmin09577"
-    const val FINGERPRINT = "TBL::qaqmin09577::4.0-dev"
+    const val MAINTAINER = "qaqmin"
+    const val REPO_URL = "https://github.com/qaqmin/TiebaLite"
+    const val PROFILE_URL = "https://github.com/qaqmin"
+    const val FINGERPRINT = "TBL::qaqmin::4.0-dev"
 }

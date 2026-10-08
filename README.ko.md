@@ -5,13 +5,13 @@
 # <p align="center">贴吧 Lite · TiebaLite</p>
 <p align="center"><strong>비공식 바이두 티에바 Android 클라이언트 | 원탭 전체 체크인 · 3000+ 게시판 커버 | 스마트 업데이트 확인 · 초안 복원 | Android 5.0 → 16 전 세대 지원 | Compose · Kotlin · 광고 없음</strong></p>
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
-        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
+    <a href="https://github.com/qaqmin/TiebaLite/releases/latest">
+        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin/TiebaLite?style=flat&color=blue">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml/badge.svg">
+    <a href="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml/badge.svg">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/blob/4.0-dev/LICENSE">
+    <a href="https://github.com/qaqmin/TiebaLite/blob/4.0-dev/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green.svg">
     </a>
     <img alt="API" src="https://img.shields.io/badge/API-21%2B-brightgreen">
@@ -78,7 +78,7 @@
 | 📐 **콘텐츠 밀도 조절** | 컴팩트 / 표준 / 편안한 3가지 간격 모드 |
 | 💾 **오프라인 캐시** | 네트워크가 끊겨도 캐시된 게시글 목록을 자동으로 불러옴 |
 | 🏗️ **현대적 기술 스택** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
-| 📦 **원탭 설치** | [릴리스 페이지](https://github.com/qaqmin09577/TiebaLite/releases/latest)에서 APK를 바로 다운로드 |
+| 📦 **원탭 설치** | [릴리스 페이지](https://github.com/qaqmin/TiebaLite/releases/latest)에서 APK를 바로 다운로드 |
 
 ---
 
@@ -441,8 +441,8 @@ TiebaLite는 **비공식** 바이두 티에바 Android 클라이언트입니다.
 🐛 버그를 발견했나요? 💡 좋은 아이디어가 있나요? GitHub Issues를 통해 제출해 주세요:
 
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/issues">
-        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin09577/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
+    <a href="https://github.com/qaqmin/TiebaLite/issues">
+        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
     </a>
 </p>
 
@@ -513,7 +513,7 @@ TiebaLite는 **비공식** 바이두 티에바 Android 클라이언트입니다.
 | v4.0.53 | 2026-10-04 | **🛠️ Mac 원격 빌드 라인** — 빌드를 Mac 빌드 기계로 이전(CI 변동기의 안정적 산출 라인) · 서명은 로컬과 비트 단위로 동일 |
 | v4.0.55 | 2026-10-07 | **🔄 업데이트 확인 강화** — ETag 조건부 요청(304은 익명 제한 미집계) + 403 자동 폴백 · clean 수정(stale APK가 산출물에 섞이지 않음) |
 | v4.0.54 | 2026-10-04 | **🏠 새 계정 qaqmin09577으로 이전** — 기본 업데이트 채널을 GitHub로 전환 · Codeberg는 예비 채널로 전환 · 이중 트랙 공개 · 덮어쓰기 무영향 |
-| [▶ 최신 릴리스](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← APK 다운로드 여기 / Download APK here** |
+| [▶ 최신 릴리스](https://github.com/qaqmin/TiebaLite/releases/latest) | | **← APK 다운로드 여기 / Download APK here** |
 
 ---
 

@@ -5,13 +5,13 @@
 # <p align="center">贴吧 Lite · TiebaLite</p>
 <p align="center"><strong>第三方百度贴吧 Android 客户端 | 全量一键签到 · 3000+ 吧全覆盖 | 智检更新 · 草稿回溯 | Android 5.0 → 16 全世代兼容 | Compose · Kotlin · 无广告</strong></p>
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
-        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
+    <a href="https://github.com/qaqmin/TiebaLite/releases/latest">
+        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin/TiebaLite?style=flat&color=blue">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml/badge.svg">
+    <a href="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml/badge.svg">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/blob/4.0-dev/LICENSE">
+    <a href="https://github.com/qaqmin/TiebaLite/blob/4.0-dev/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green.svg">
     </a>
     <img alt="API" src="https://img.shields.io/badge/API-21%2B-brightgreen">
@@ -78,7 +78,7 @@
 | 📐 **内容密度调节** | 紧凑/标准/舒适三种间距模式 |
 | 💾 **离线缓存** | 网络断开时自动加载缓存的帖子列表 |
 | 🏗️ **现代技术栈** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
-| 📦 **一键安装** | [Release 页面](https://github.com/qaqmin09577/TiebaLite/releases/latest) 直接下载 APK |
+| 📦 **一键安装** | [Release 页面](https://github.com/qaqmin/TiebaLite/releases/latest) 直接下载 APK |
 
 ---
 
@@ -439,8 +439,8 @@
 🐛 发现 Bug？💡 有好想法？欢迎通过 GitHub Issues 提交：
 
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/issues">
-        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin09577/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
+    <a href="https://github.com/qaqmin/TiebaLite/issues">
+        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
     </a>
 </p>
 
@@ -511,7 +511,7 @@
 | v4.0.53 | 2026-10-04 | **🛠️ Mac 远程构建线** — 构建迁移至 Mac 构建机（CI 波动期的稳定产出线）· 签名与本地逐位一致 |
 | v4.0.55 | 2026-10-07 | **🔄 更新检查加固** — ETag 条件请求（304 不计入匿名限额）+ 403 自动回退 · clean 修复（stale APK 不再混入产物） |
 | v4.0.54 | 2026-10-04 | **🏠 迁移新账号 qaqmin09577** — 默认更新渠道切换 GitHub · Codeberg 转备用渠道 · 双轨发布 · 覆盖更新无损 |
-| [▶ 最新 Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |
+| [▶ 最新 Release](https://github.com/qaqmin/TiebaLite/releases/latest) | | **← APK 下载点这里 / Download APK here** |
 
 ---
 

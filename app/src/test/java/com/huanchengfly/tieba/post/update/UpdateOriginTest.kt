@@ -26,7 +26,7 @@ class UpdateOriginTest {
             UpdateDownloader.rootFor(UpdateOrigin.CODEBERG)
         )
         assertEquals(
-            "https://api.github.com/repos/qaqmin09577/TiebaLite",
+            "https://api.github.com/repos/qaqmin/TiebaLite",
             UpdateDownloader.rootFor(UpdateOrigin.GITHUB)
         )
     }

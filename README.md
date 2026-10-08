@@ -5,13 +5,13 @@
 # <p align="center">Tieba Lite · TiebaLite</p>
 <p align="center"><strong>Unofficial Baidu Tieba Android Client | One-Tap Full Check-In · 3000+ Forums Covered | Smart Update Check · Draft Recall | Android 5.0 → 16 Full Compatibility | Compose · Kotlin · No Ads</strong></p>
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/releases/latest">
-        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin09577/TiebaLite?style=flat&color=blue">
+    <a href="https://github.com/qaqmin/TiebaLite/releases/latest">
+        <img alt="Latest Release" src="https://img.shields.io/github/v/release/qaqmin/TiebaLite?style=flat&color=blue">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/qaqmin09577/TiebaLite/actions/workflows/build.yml/badge.svg">
+    <a href="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/qaqmin/TiebaLite/actions/workflows/build.yml/badge.svg">
     </a>
-    <a href="https://github.com/qaqmin09577/TiebaLite/blob/4.0-dev/LICENSE">
+    <a href="https://github.com/qaqmin/TiebaLite/blob/4.0-dev/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green.svg">
     </a>
     <img alt="API" src="https://img.shields.io/badge/API-21%2B-brightgreen">
@@ -78,7 +78,7 @@ Of course, it is entirely voluntary — please don't feel any pressure. If you f
 | 📐 **Content Density** | Compact / Standard / Comfortable spacing modes |
 | 💾 **Offline Cache** | Automatically loads cached thread lists when the network drops |
 | 🏗️ **Modern Tech Stack** | Kotlin 2.0.21 + Compose BOM 2024.12 + Hilt + Protobuf |
-| 📦 **One-Tap Install** | Download the APK directly from the [Releases page](https://github.com/qaqmin09577/TiebaLite/releases/latest) |
+| 📦 **One-Tap Install** | Download the APK directly from the [Releases page](https://github.com/qaqmin/TiebaLite/releases/latest) |
 
 ---
 
@@ -438,8 +438,8 @@ Step 2: find the **"Reverse Browsing"** button in the popup menu and tap it to t
 🐛 Found a bug? 💡 Have ideas? Submit them via GitHub Issues:
 
 <p align="center">
-    <a href="https://github.com/qaqmin09577/TiebaLite/issues">
-        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin09577/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
+    <a href="https://github.com/qaqmin/TiebaLite/issues">
+        <img alt="GitHub Issues" src="https://img.shields.io/github/issues/qaqmin/TiebaLite?style=flat&color=red&label=%F0%9F%90%9B%20Bug%20%2F%20Feature">
     </a>
 </p>
 
@@ -510,7 +510,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
 | v4.0.55 | 2026-10-07 | **🔄 Update Check Hardening** — ETag conditional requests (304s bypass GitHub's anonymous limit) + automatic 403 fallback · clean task fix (stale APKs no longer leak into artifacts) |
 | v4.0.54 | 2026-10-04 | **🏠 Migrated to New Account qaqmin09577** — default update channel switched to GitHub · Codeberg becomes fallback · dual-track publishing · overwrite updates unaffected |
-| [▶ Latest Release](https://github.com/qaqmin09577/TiebaLite/releases/latest) | | **← Download APK here** |
+| [▶ Latest Release](https://github.com/qaqmin/TiebaLite/releases/latest) | | **← Download APK here** |
 
 ---
 
