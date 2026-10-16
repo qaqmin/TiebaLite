@@ -88,6 +88,12 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.58 — Photo Picker Compatibility Fix
+
+> ### 🖼️ Adding Images Works Everywhere
+> Fixed "cannot add images" on Android 12 ROMs (e.g. MuMu emulator) that ship the photo picker module but whose picker activity cannot be resolved — the app now checks the intent resolves first and falls back to the built-in picker instead of doing nothing.
+> Real devices (Android 13+) using the system photo picker are unaffected.
+
 ## 🆕 v4.0.57 — Reply & Sub-Floor Image Fixes (Issue #1)
 
 > ### 🖼️ Images That Actually Show Up
@@ -521,6 +527,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.58 | 2026-10-16 | **🖼️ Photo Picker Compatibility** — intent resolvability check with Matisse fallback (fixes "cannot add images" on Android 12 ROMs like MuMu) |
 | v4.0.57 | 2026-10-16 | **🖼️ Reply & Sub-Floor Image Fixes** — picker subscription race fixed (stable collection) · blank-URL/size guards with logging (issue #1) |
 | v4.0.56 | 2026-10-07 | **🔀 Update Channel Migrated** — GitHub update channel now points at qaqmin/TiebaLite (previous account banned) · README links updated to match |
 | v4.0.55 | 2026-10-07 | **🔄 Update Check Hardening** — ETag conditional requests (304s bypass GitHub's anonymous limit) + automatic 403 fallback · clean task fix (stale APKs no longer leak into artifacts) |
