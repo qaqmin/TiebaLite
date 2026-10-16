@@ -834,18 +834,20 @@ private fun ImagePanel(
 ) {
     val id = remember { UUID.randomUUID().toString() }
     val coroutineScope = rememberCoroutineScope()
-    // 订阅选图结果。历史上用 onGlobalEvent(DisposableEffect(filter, listener))——
-    // filter/listener 是每次重组都变化的不稳定 key，导致每次重组都取消重订阅，
-    // 与 replay=0 的全局事件总线之间存在「无收集者」窗口，选图事件在该窗口被直接
-    // 丢弃（用户侧症状：选完图面板无反应）。改为 LaunchedEffect(Unit) 一次性收集，
-    // 组合存活期间收集器不中断；回调用 rememberUpdatedState 保持最新。
+    // 订阅选图结果。两个坑都踩过（2026-10-16 issue #1 红米 K70 实测）：
+    // 1) onGlobalEvent(DisposableEffect(filter, listener)) 的 key 不稳定，每次重组
+    //    取消重订阅，与 replay=0 的事件总线之间有「无收集者」窗口，事件被丢；
+    // 2) 按 remember { UUID } 的请求 id 过滤：选图器打开后 App 退到后台，ROM 可能
+    //    回收进程/重建 Activity，面板重组后 id 换新，而选图结果带着旧 id 回来，
+    //    filter 不匹配照样丢——用户侧症状是「第一次选图必失败，再选一次才好」。
+    // 全局总线上 SelectedImages 只有一个生产者（MainActivityV2 的选图 launcher）
+    // 和一个消费者（本面板），id 路由没有存在意义，直接收全部结果，不再过滤。
     val currentOnNewImageSelected by rememberUpdatedState(onNewImageSelected)
     LaunchedEffect(Unit) {
         GlobalEventFlow
             .filterIsInstance<GlobalEvent.SelectedImages>()
-            .filter { it.id == id }
             .collect {
-                Log.i("ImagePanel", "selected images: count=${it.images.size} id=${it.id}")
+                Log.i("ImagePanel", "selected images: count=${it.images.size}")
                 if (it.images.isEmpty()) {
                     Log.w("ImagePanel", "picker returned empty result (resultCode!=OK or no uri)")
                 }
