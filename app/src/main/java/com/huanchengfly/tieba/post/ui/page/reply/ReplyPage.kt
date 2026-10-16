@@ -66,6 +66,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -122,8 +123,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import org.litepal.LitePal
@@ -830,11 +833,23 @@ private fun ImagePanel(
 ) {
     val id = remember { UUID.randomUUID().toString() }
     val coroutineScope = rememberCoroutineScope()
-    onGlobalEvent<GlobalEvent.SelectedImages>(
-        coroutineScope,
-        filter = { it.id == id }
-    ) {
-        onNewImageSelected(it.images)
+    // 订阅选图结果。历史上用 onGlobalEvent(DisposableEffect(filter, listener))——
+    // filter/listener 是每次重组都变化的不稳定 key，导致每次重组都取消重订阅，
+    // 与 replay=0 的全局事件总线之间存在「无收集者」窗口，选图事件在该窗口被直接
+    // 丢弃（用户侧症状：选完图面板无反应）。改为 LaunchedEffect(Unit) 一次性收集，
+    // 组合存活期间收集器不中断；回调用 rememberUpdatedState 保持最新。
+    val currentOnNewImageSelected by rememberUpdatedState(onNewImageSelected)
+    LaunchedEffect(Unit) {
+        GlobalEventFlow
+            .filterIsInstance<GlobalEvent.SelectedImages>()
+            .filter { it.id == id }
+            .collect {
+                Log.i("ImagePanel", "selected images: count=${it.images.size} id=${it.id}")
+                if (it.images.isEmpty()) {
+                    Log.w("ImagePanel", "picker returned empty result (resultCode!=OK or no uri)")
+                }
+                currentOnNewImageSelected(it.images)
+            }
     }
 
     Column(
