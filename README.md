@@ -88,6 +88,12 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.59 — First-Pick Reliability Fix (Issue #1 Follow-Up)
+
+> ### 🖼️ The First Pick Now Works
+> Fixed "the first image selection always fails, the second works" on real devices (reproduced on Redmi K70 / HyperOS): when the picker opens the app goes to the background, and ROMs may reclaim the process or recreate the activity — the panel's request id then changes and the picker result (carrying the old id) was filtered out and dropped. Picker results are no longer filtered by id (the global event has a single consumer).
+> v4.0.58 fixed the emulator (Android 12) picker-not-resolvable case; this version fixes the real-device first-pick failure.
+
 ## 🆕 v4.0.58 — Photo Picker Compatibility Fix
 
 > ### 🖼️ Adding Images Works Everywhere
@@ -527,6 +533,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.59 | 2026-10-16 | **🖼️ First-Pick Reliability** — picker results no longer filtered by request id (fixes "first selection always fails" on HyperOS/Redmi K70; issue #1 follow-up) |
 | v4.0.58 | 2026-10-16 | **🖼️ Photo Picker Compatibility** — intent resolvability check with Matisse fallback (fixes "cannot add images" on Android 12 ROMs like MuMu) |
 | v4.0.57 | 2026-10-16 | **🖼️ Reply & Sub-Floor Image Fixes** — picker subscription race fixed (stable collection) · blank-URL/size guards with logging (issue #1) |
 | v4.0.56 | 2026-10-07 | **🔀 Update Channel Migrated** — GitHub update channel now points at qaqmin/TiebaLite (previous account banned) · README links updated to match |
