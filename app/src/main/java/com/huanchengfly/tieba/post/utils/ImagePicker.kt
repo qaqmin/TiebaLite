@@ -27,13 +27,22 @@ fun AppCompatActivity.registerPickMediasLauncher(callback: (PickMediasResult) ->
 }
 
 fun isPhotoPickerAvailable(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    val versionOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         true
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         getExtensionVersion(Build.VERSION_CODES.R) >= 2
     } else {
         false
     }
+    if (!versionOk) return false
+    // 模块在 ≠ 选图器真能用：部分 ROM（MuMu 模拟器，Android 12）装着 media module、
+    // 扩展版本也够，但 picker activity 实际无法 resolve（直接 am start 报
+    // unable to resolve Intent）。不做这道检查时 launch 抛 ActivityNotFoundException
+    // 被协程吞掉，用户侧症状是点「添加图片」毫无反应（2026-10-16 模拟器实测复现）。
+    // 加一道解析检查，不可用回退 Matisse 内置选图器。QUERY_ALL_PACKAGES 已在
+    // manifest 声明，Android 11+ 的包可见性不受影响。
+    val probe = Intent(MediaStore.ACTION_PICK_IMAGES).apply { type = "image/*" }
+    return probe.resolveActivity(App.INSTANCE.packageManager) != null
 }
 
 fun shouldUsePhotoPicker(): Boolean {
