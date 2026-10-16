@@ -90,9 +90,9 @@ android {
     }
 
     defaultConfig {
-        buildConfigField("String", "SIGN_MAINTAINER", "\"qaqmin09577\"")
-        buildConfigField("String", "SIGN_REPO", "\"https://github.com/qaqmin09577/TiebaLite\"")
-        buildConfigField("String", "SIGN_PROFILE", "\"https://github.com/qaqmin09577\"")
+        buildConfigField("String", "SIGN_MAINTAINER", "\"qaqmin\"")
+        buildConfigField("String", "SIGN_REPO", "\"https://github.com/qaqmin/TiebaLite\"")
+        buildConfigField("String", "SIGN_PROFILE", "\"https://github.com/qaqmin\"")
     }
 
     buildTypes {

@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.AnimationSpec
@@ -196,8 +197,11 @@ class MainActivityV2 : BaseComposeActivity() {
     private val notificationCountFlow: MutableSharedFlow<Int> =
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
+    private var pickingMedias = false
+
     private val pickMediasLauncher =
         registerPickMediasLauncher {
+            pickingMedias = false
             emitGlobalEvent(GlobalEvent.SelectedImages(it.id, it.uris))
         }
 
@@ -513,9 +517,22 @@ class MainActivityV2 : BaseComposeActivity() {
             }
         }
         onGlobalEvent<GlobalEvent.StartSelectImages> {
-            pickMediasLauncher.launch(
-                PickMediasRequest(it.id, it.maxCount, it.mediaType)
-            )
+            // 防重入：曾因收集器重叠导致同一事件启动两个相册 Activity，用户选图确认后
+            // 露出底下空实例（「相册页面不退出」）。事件总线已修复（见
+            // GlobalEvent.onGlobalEvent 注释），这里再加一道闸保证同时只有一个选图请求。
+            if (pickingMedias) {
+                Log.w("MainActivityV2", "ignore duplicate StartSelectImages while picking")
+                return@onGlobalEvent
+            }
+            pickingMedias = true
+            try {
+                pickMediasLauncher.launch(
+                    PickMediasRequest(it.id, it.maxCount, it.mediaType)
+                )
+            } catch (e: Exception) {
+                pickingMedias = false
+                Log.e("MainActivityV2", "launch pick medias failed", e)
+            }
         }
         onGlobalEvent<GlobalEvent.StartActivityForResult> {
             mLaunchActivityForResultLauncher.launch(

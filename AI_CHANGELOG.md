@@ -1,5 +1,15 @@
 # AI_CHANGELOG
 
+## v4.0.60
+
+### 🇨🇳 中文
+
+修复回帖添加图片后「相册页面不退出」的问题（issue #1 的原始症状，真机与模拟器均复现）。
+
+- 修复：选图器每次点击会被启动两次——全局事件总线 onGlobalEvent 用了 DisposableEffect(filter, listener) 不稳定 key，重组时新旧收集器重叠，同一事件触发两次 launch，叠出两个相册 Activity；用户在顶层实例选图确认后，底下那个空实例露出，表现为「图片已插入回复，但相册不关」
+- 修复：onGlobalEvent 助手改为 LaunchedEffect(Unit) 常驻单收集器 + rememberUpdatedState 保持最新回调——一次性修复所有调用点的「无收集者窗口丢事件 / 重叠窗口重事件」隐患（v4.0.57 ReplyPage 选图无反应与此同根）
+- 加固：MainActivityV2 选图启动加防重入闸，同时只允许一个选图请求；launch 异常时自动解锁
+
 ## v4.0.59
 
 ### 🇨🇳 中文
