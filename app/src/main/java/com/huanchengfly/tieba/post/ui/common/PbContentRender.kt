@@ -1,6 +1,7 @@
 package com.huanchengfly.tieba.post.ui.common
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -130,9 +131,20 @@ data class PicContentRender(
 ) : PbContentRender {
     @Composable
     override fun Render() {
+        // 防御：URL 为空或尺寸非正数时原来会静默渲染出空白/零尺寸控件，
+        // 用户侧症状即「图片看不到」（2026-10-08 issue #1 楼中楼图片）。
+        // 这里显式跳过并打日志，让数据问题可观测；尺寸非法时退化为正方形。
+        if (picUrl.isBlank()) {
+            Log.w("PicContentRender", "blank picUrl, skip render (picId=$picId)")
+            return
+        }
+        if (width <= 0 || height <= 0) {
+            Log.w("PicContentRender", "invalid size ${width}x$height, fallback to square (picId=$picId)")
+        }
         val widthFraction =
             if (LocalWindowSizeClass.current.widthSizeClass == WindowWidthSizeClass.Compact) 1f else 0.5f
         val context = LocalContext.current
+        val ratio = if (width > 0 && height > 0) width * 1f / height else 1f
 
         NetworkImage(
             imageUri = picUrl,
@@ -140,7 +152,7 @@ data class PicContentRender(
             modifier = Modifier
                 .clip(RoundedCornerShape(context.appPreferences.radius.dp))
                 .fillMaxWidth(widthFraction)
-                .aspectRatio(width * 1f / height),
+                .aspectRatio(ratio),
             photoViewData = photoViewData,
             contentScale = ContentScale.Crop
         )
