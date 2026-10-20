@@ -74,10 +74,10 @@ class PersonalizedViewModel @Inject constructor() :
             )
 
         /** 「只看已关注」模式下按 forumId 过滤；空列表（未登录/加载失败）不过滤，避免整页空白 */
-        private suspend fun filterFollowedOnly(data: ImmutableList<ImmutableHolder<ThreadInfo>>): ImmutableList<ImmutableHolder<ThreadInfo>> {
+        private suspend fun filterFollowedOnly(data: List<ImmutableHolder<ThreadInfo>>): List<ImmutableHolder<ThreadInfo>> {
             val followed = FollowedForumsRepository.ensureLoaded()
             if (followed.isEmpty()) return data
-            return data.filter { it.get { forumId } in followed }.toImmutableList()
+            return data.filter { it.get { forumId } in followed }
         }
 
         private fun produceRefreshPartialChange(): Flow<PersonalizedPartialChange.Refresh> =
@@ -132,10 +132,10 @@ class PersonalizedViewModel @Inject constructor() :
                 .catch { emit(PersonalizedPartialChange.LoadMore.Failure(currentPage = page, error = it)) }
 
         private fun PersonalizedUiIntent.SetFollowMode.producePartialChange(): Flow<PersonalizedPartialChange.SetFollowMode> =
-            flow {
+            flow<PersonalizedPartialChange.SetFollowMode> {
                 App.INSTANCE.appPreferences.personalizedFollowedOnly = enabled
                 // 切换模式即重拉首页：保持数据与当前模式一致（单次请求，避免重复调用）
-                emit(PersonalizedPartialChange.SetFollowMode.Start)
+                emit(PersonalizedPartialChange.SetFollowMode.Start(enabled))
                 try {
                     val response = PersonalizedRepository.personalizedFlow(1, 1).first()
                     val threadPersonalizedData = response.data_?.thread_personalized ?: emptyList()
