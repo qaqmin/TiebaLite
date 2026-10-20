@@ -91,10 +91,14 @@ fun ConcernPage(
                     contentType = { _, item -> item.recommendType }
                 ) { index, item ->
                     Container {
-                        if (item.recommendType == 1) {
+                        // 实验态（见 ConcernFeedDebug）：原来只渲染 recommendType==1，
+                        // 其余类型静默丢弃；现改为有 threadList 就按帖子卡片渲染，
+                        // 保证试验时任何返回内容都可见。定稿后按最终形态重写此处。
+                        val thread = item.threadList
+                        if (thread != null) {
                             Column {
                                 FeedCard(
-                                    item = wrapImmutable(item.threadList!!),
+                                    item = wrapImmutable(thread),
                                     onClick = {
                                         navigator.navigate("thread/${it.threadId}")
                                     },
@@ -120,8 +124,6 @@ fun ConcernPage(
                                     )
                                 }
                             }
-                        } else {
-                            Box {}
                         }
                     }
                 }

@@ -15,6 +15,7 @@ import com.huanchengfly.tieba.post.arch.PartialChangeProducer
 import com.huanchengfly.tieba.post.arch.UiEvent
 import com.huanchengfly.tieba.post.arch.UiIntent
 import com.huanchengfly.tieba.post.arch.UiState
+import com.huanchengfly.tieba.post.utils.ConcernFeedDebug
 import com.huanchengfly.tieba.post.utils.appPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -55,10 +56,15 @@ class ConcernViewModel @Inject constructor() :
                 intentFlow.filterIsInstance<ConcernUiIntent.Agree>().flatMapConcat { it.producePartialChange() },
             )
 
-        private fun produceRefreshPartialChange(): Flow<ConcernPartialChange.Refresh> =
-            TiebaApi.getInstance().userLikeFlow("", App.INSTANCE.appPreferences.userLikeLastRequestUnix, 1)
+        private fun produceRefreshPartialChange(): Flow<ConcernPartialChange.Refresh> {
+            // 实验态（见 ConcernFeedDebug）：重置增量游标，保证每次刷新都拿到完整首页
+            val debug = ConcernFeedDebug.resetCursor()
+            val lastRequestUnix = if (debug) 0L else App.INSTANCE.appPreferences.userLikeLastRequestUnix
+            return TiebaApi.getInstance().userLikeFlow("", lastRequestUnix, 1)
                 .map<UserLikeResponse, ConcernPartialChange.Refresh> {
-                    App.INSTANCE.appPreferences.userLikeLastRequestUnix = it.data_?.requestUnix ?: 0L
+                    if (!debug) {
+                        App.INSTANCE.appPreferences.userLikeLastRequestUnix = it.data_?.requestUnix ?: 0L
+                    }
                     ConcernPartialChange.Refresh.Success(
                         data = it.toData(),
                         hasMore = it.data_?.hasMore == 1,
@@ -67,6 +73,7 @@ class ConcernViewModel @Inject constructor() :
                 }
                 .onStart { emit(ConcernPartialChange.Refresh.Start) }
                 .catch { emit(ConcernPartialChange.Refresh.Failure(it)) }
+        }
 
         private fun ConcernUiIntent.LoadMore.producePartialChange(): Flow<ConcernPartialChange.LoadMore> =
             TiebaApi.getInstance().userLikeFlow(pageTag, App.INSTANCE.appPreferences.userLikeLastRequestUnix, 2)
@@ -107,7 +114,9 @@ sealed interface ConcernUiIntent : UiIntent {
 
 internal fun List<ConcernData>.distinctById(): ImmutableList<ConcernData> {
     return distinctBy {
-        it.threadList?.id
+        // 同一条帖子的不同动态（主帖/不同回复）类型与 postData.id 不同，
+        // 只按 threadList.id 去重会把它们合并成一条
+        "${it.recommendType}_${it.postData?.id}_${it.threadList?.id}"
     }.toImmutableList()
 }
 

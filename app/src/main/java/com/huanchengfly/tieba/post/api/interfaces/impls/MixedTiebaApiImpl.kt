@@ -121,6 +121,7 @@ import com.huanchengfly.tieba.post.models.MyInfoBean
 import com.huanchengfly.tieba.post.models.PhotoInfoBean
 import com.huanchengfly.tieba.post.toJson
 import com.huanchengfly.tieba.post.utils.AccountUtil
+import com.huanchengfly.tieba.post.utils.ConcernFeedDebug
 import com.huanchengfly.tieba.post.utils.CuidUtils
 import com.huanchengfly.tieba.post.utils.ImageUtil
 import kotlinx.coroutines.Deferred
@@ -985,7 +986,7 @@ object MixedTiebaApiImpl : ITiebaApi {
                         common = buildCommonRequest(),
                         pageTag = pageTag,
                         lastRequestUnix = lastRequestUnix,
-                        followType = 1,
+                        followType = ConcernFeedDebug.followTypeOverride() ?: 1,
                         loadType = loadType
                     )
                 )
