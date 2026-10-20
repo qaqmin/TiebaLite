@@ -91,9 +91,9 @@ fun ConcernPage(
                     contentType = { _, item -> item.recommendType }
                 ) { index, item ->
                     Container {
-                        // 实验态（见 ConcernFeedDebug）：原来只渲染 recommendType==1，
-                        // 其余类型静默丢弃；现改为有 threadList 就按帖子卡片渲染，
-                        // 保证试验时任何返回内容都可见。定稿后按最终形态重写此处。
+                        // 原来只渲染 recommendType==1，其余类型静默丢弃（且 threadList!!
+                        // 遇到空值会直接崩）。现改为有 threadList 就按帖子卡片渲染：
+                        // 回复型动态（postData）也落到其所属帖子卡片上，不再丢内容。
                         val thread = item.threadList
                         if (thread != null) {
                             Column {

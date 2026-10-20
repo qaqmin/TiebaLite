@@ -88,6 +88,12 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.62 — Concern Feed Fix (Issue #2)
+
+> ### 📰 The 关注 Tab Now Shows Your Followed Forums
+> Fixed "the 关注 (Followed) tab shows mostly my own posts" (issue #2): the concern feed API was called with the wrong followType value — 1 returns only your own activity, while 0 returns posts from forums you follow. Verified empirically on the emulator by testing every candidate value against a live account (0/1/2/3). The tab now shows followed-forum posts only, which also covers the "only recommend forums I follow" request in issue #2.
+> Also fixed: items with other recommend types were silently dropped (and a null thread could crash the list), and the dedup key collapsed different activities of the same thread into one card.
+
 ## 🆕 v4.0.60 — Album Doesn't Exit Fix (Issue #1 Root Cause)
 
 > ### 🖼️ Confirming a Selection Now Returns to the Reply
@@ -538,6 +544,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.62 | 2026-10-20 | **📰 Concern Feed Fix** — the 关注 tab now shows followed-forum posts instead of your own activity (fixes "mostly my own posts"; issue #2) |
 | v4.0.60 | 2026-10-16 | **🖼️ Album Doesn't Exit Fix** — picker no longer started twice per tap (fixes "image inserted but album stays open"; issue #1 root cause) |
 | v4.0.59 | 2026-10-16 | **🖼️ First-Pick Reliability** — picker results no longer filtered by request id (fixes "first selection always fails" on HyperOS/Redmi K70; issue #1 follow-up) |
 | v4.0.58 | 2026-10-16 | **🖼️ Photo Picker Compatibility** — intent resolvability check with Matisse fallback (fixes "cannot add images" on Android 12 ROMs like MuMu) |

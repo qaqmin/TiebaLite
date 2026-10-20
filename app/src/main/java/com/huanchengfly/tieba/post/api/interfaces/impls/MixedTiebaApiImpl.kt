@@ -121,7 +121,6 @@ import com.huanchengfly.tieba.post.models.MyInfoBean
 import com.huanchengfly.tieba.post.models.PhotoInfoBean
 import com.huanchengfly.tieba.post.toJson
 import com.huanchengfly.tieba.post.utils.AccountUtil
-import com.huanchengfly.tieba.post.utils.ConcernFeedDebug
 import com.huanchengfly.tieba.post.utils.CuidUtils
 import com.huanchengfly.tieba.post.utils.ImageUtil
 import kotlinx.coroutines.Deferred
@@ -986,7 +985,11 @@ object MixedTiebaApiImpl : ITiebaApi {
                         common = buildCommonRequest(),
                         pageTag = pageTag,
                         lastRequestUnix = lastRequestUnix,
-                        followType = ConcernFeedDebug.followTypeOverride() ?: 1,
+                        // followType 语义经 2026-10-20 模拟器实测（账号关注 0 人、
+                        // 关注 5+ 吧）确认：1 只返回账号自己的动态（「关注」页曾因此
+                        // 全是用户自己的帖子），0 返回已关注吧的帖子流，2/3 同为
+                        // 已关注吧但窗口不稳定。取 0。
+                        followType = 0,
                         loadType = loadType
                     )
                 )
