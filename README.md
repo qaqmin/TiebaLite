@@ -88,6 +88,12 @@ TiebaLite is an **unofficial** Baidu Tieba Android client, written in Kotlin wit
 
 > **⚠️ Notice:** This software and its source code are for learning and communication only. Commercial use is strictly prohibited. Not affiliated with Baidu, Inc.
 
+## 🆕 v4.0.63 — Followed-Forums-Only Filter (Issue #2 Delivered)
+
+> ### 🎛️ One Switch: Only Forums You Follow
+> The recommend feed now has a "**Only followed forums**" toggle pinned to its top. On: items are filtered against your locally cached followed-forum list — you only see posts from forums you actually follow. Off: the native recommend feed. The followed list is fetched once via the paginated API, persisted locally, and refreshed automatically when you follow/unfollow a forum.
+> Correction on v4.0.62: deeper comparison showed the concern feed (followType=0) is still a recommendation stream mixing in unrelated hot content (not a followed-forums stream — the server API has no such mode); the 关注 tab is restored to its original semantics (your own activity).
+
 ## 🆕 v4.0.62 — Concern Feed Fix (Issue #2)
 
 > ### 📰 The 关注 Tab Now Shows Your Followed Forums
@@ -544,6 +550,7 @@ This project was originally developed and maintained by **[HuanCheng65](https://
 | v4.0.0-ai.51 | 2026-09-22 | 🧪 **First Fully Green CI Preview** — Android SDK installed on runners · jitpack TLS retries · ButterKnife leftovers removed · publishing moved to the native Codeberg API |
 | v4.0.52 | 2026-09-23 | **🔢 Semantic Versioning Series** — version line switched to v4.0.N · stable channel filters the latest official release from the releases list |
 | v4.0.53 | 2026-10-04 | **🛠️ Mac Remote Build Line** — builds moved to the Mac build machine (a stable output line during CI turbulence) · signatures byte-identical to local builds |
+| v4.0.63 | 2026-10-20 | **🎛️ Followed-Forums-Only Filter** — a toggle on the recommend feed that keeps only posts from forums you follow (issue #2) · concern tab restored to own-activity semantics |
 | v4.0.62 | 2026-10-20 | **📰 Concern Feed Fix** — the 关注 tab now shows followed-forum posts instead of your own activity (fixes "mostly my own posts"; issue #2) |
 | v4.0.60 | 2026-10-16 | **🖼️ Album Doesn't Exit Fix** — picker no longer started twice per tap (fixes "image inserted but album stays open"; issue #1 root cause) |
 | v4.0.59 | 2026-10-16 | **🖼️ First-Pick Reliability** — picker results no longer filtered by request id (fixes "first selection always fails" on HyperOS/Redmi K70; issue #1 follow-up) |
