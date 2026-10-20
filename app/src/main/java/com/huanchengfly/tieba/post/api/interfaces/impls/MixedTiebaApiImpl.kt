@@ -985,11 +985,12 @@ object MixedTiebaApiImpl : ITiebaApi {
                         common = buildCommonRequest(),
                         pageTag = pageTag,
                         lastRequestUnix = lastRequestUnix,
-                        // followType 语义经 2026-10-20 模拟器实测（账号关注 0 人、
-                        // 关注 5+ 吧）确认：1 只返回账号自己的动态（「关注」页曾因此
-                        // 全是用户自己的帖子），0 返回已关注吧的帖子流，2/3 同为
-                        // 已关注吧但窗口不稳定。取 0。
-                        followType = 0,
+                        // followType 语义经 2026-10-20 模拟器实测确认：0 返回关注系统
+                        // 推荐内容（实测混入大量非关注吧的热门帖，无法当作「已关注吧
+                        // 帖子流」使用，见 issue #2 排查记录）；1 返回账号自己的动态。
+                        // 「关注」标签的原始语义是自己的动态，取 1。「只看已关注的吧」
+                        // 由推荐页的过滤开关承担（PersonalizedPage + FollowedForumsRepository）。
+                        followType = 1,
                         loadType = loadType
                     )
                 )

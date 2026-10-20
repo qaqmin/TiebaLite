@@ -50,6 +50,18 @@ open class AppPreferencesUtils private constructor(ctx: Context) {
 
     var userLikeLastRequestUnix by DataStoreDelegates.long(defaultValue = 0L)
 
+    /** 已关注吧 id 集合（逗号分隔存储），由 FollowedForumsRepository 维护，用于推荐流「只看已关注」过滤 */
+    var followedForumIds: Set<Long>?
+        get() = followedForumIdsRaw?.split(",")?.mapNotNull { it.toLongOrNull() }?.toSet()
+        set(value) {
+            followedForumIdsRaw = value?.joinToString(",") { it.toString() }
+        }
+
+    private var followedForumIdsRaw by DataStoreDelegates.string(key = "followed_forum_ids")
+
+    /** 推荐页「只看已关注吧」开关持久化 */
+    var personalizedFollowedOnly by DataStoreDelegates.boolean(defaultValue = false, key = "personalized_followed_only")
+
     var ignoreBatteryOptimizationsDialog by DataStoreDelegates.boolean(defaultValue = false)
 
     var appIcon by DataStoreDelegates.string(

@@ -113,6 +113,10 @@ fun PersonalizedPage(
         prop1 = PersonalizedUiState::hiddenThreadIds,
         initial = persistentListOf()
     )
+    val followedOnly by viewModel.uiState.collectPartialAsState(
+        prop1 = PersonalizedUiState::followedOnly,
+        initial = false
+    )
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = { viewModel.send(PersonalizedUiIntent.Refresh) }
@@ -191,6 +195,10 @@ fun PersonalizedPage(
                     dataProvider = { data },
                     refreshPositionProvider = { refreshPosition },
                     hiddenThreadIdsProvider = { hiddenThreadIds },
+                    followedOnly = followedOnly,
+                    onSetFollowedOnly = {
+                        viewModel.send(PersonalizedUiIntent.SetFollowMode(it))
+                    },
                     onItemClick = {
                         navigator.navigate("thread/${it.id}")
                     },
@@ -268,6 +276,8 @@ private fun FeedList(
     dataProvider: () -> ImmutableList<ThreadItemData>,
     refreshPositionProvider: () -> Int,
     hiddenThreadIdsProvider: () -> ImmutableList<Long>,
+    followedOnly: Boolean,
+    onSetFollowedOnly: (Boolean) -> Unit,
     onItemClick: (ThreadInfo) -> Unit,
     onItemReplyClick: (ThreadInfo) -> Unit,
     onAgree: (ThreadInfo) -> Unit,
@@ -285,6 +295,12 @@ private fun FeedList(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
+        item(key = "followed_only_filter") {
+            FollowedOnlyFilter(
+                checked = followedOnly,
+                onCheckedChange = onSetFollowedOnly
+            )
+        }
         itemsIndexed(
             items = data,
             key = { _, (item) -> "${item.get { id }}" },
@@ -385,6 +401,37 @@ private fun RefreshTip(
         Text(
             text = stringResource(id = R.string.tip_refresh),
             style = MaterialTheme.typography.subtitle1
+        )
+    }
+}
+
+/**
+ * 推荐流「只看已关注吧」过滤行。位于列表顶部：关闭时不过滤（原生推荐流），
+ * 开启后按本地关注吧列表过滤（issue #2）。
+ */
+@Composable
+private fun FollowedOnlyFilter(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(ExtendedTheme.colors.chip)
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.personalized_followed_only),
+            style = MaterialTheme.typography.subtitle1
+        )
+        androidx.compose.material.Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
         )
     }
 }

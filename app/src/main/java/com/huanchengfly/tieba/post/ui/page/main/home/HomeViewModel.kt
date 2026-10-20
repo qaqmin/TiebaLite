@@ -14,6 +14,7 @@ import com.huanchengfly.tieba.post.arch.UiIntent
 import com.huanchengfly.tieba.post.arch.UiState
 import com.huanchengfly.tieba.post.models.database.History
 import com.huanchengfly.tieba.post.models.database.TopForum
+import com.huanchengfly.tieba.post.repository.FollowedForumsRepository
 import com.huanchengfly.tieba.post.utils.AccountUtil
 import com.huanchengfly.tieba.post.utils.HistoryUtil
 import kotlinx.collections.immutable.ImmutableList
@@ -127,6 +128,7 @@ class HomeViewModel : BaseViewModel<HomeUiIntent, HomePartialChange, HomeUiState
             TiebaApi.getInstance()
                 .unlikeForumFlow(forumId, forumName, AccountUtil.getLoginInfo()!!.tbs)
                 .map<CommonResponse, HomePartialChange.Unfollow> {
+                    FollowedForumsRepository.invalidate()
                     HomePartialChange.Unfollow.Success(forumId)
                 }
                 .catch { emit(HomePartialChange.Unfollow.Failure(it.getErrorMessage())) }

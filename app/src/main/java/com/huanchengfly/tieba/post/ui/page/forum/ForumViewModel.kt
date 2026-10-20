@@ -15,6 +15,7 @@ import com.huanchengfly.tieba.post.arch.UiEvent
 import com.huanchengfly.tieba.post.arch.UiIntent
 import com.huanchengfly.tieba.post.arch.UiState
 import com.huanchengfly.tieba.post.arch.wrapImmutable
+import com.huanchengfly.tieba.post.repository.FollowedForumsRepository
 import com.huanchengfly.tieba.post.repository.FrsPageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -122,6 +123,8 @@ class ForumViewModel @Inject constructor() :
         private fun ForumUiIntent.Like.produceLoadPartialChange() =
             TiebaApi.getInstance().likeForumFlow("$forumId", forumName, tbs)
                 .map<LikeForumResultBean, ForumPartialChange.Like> {
+                    // 关注列表已变化，推荐流「只看已关注」的过滤缓存需要刷新
+                    FollowedForumsRepository.invalidate()
                     ForumPartialChange.Like.Success(it)
                 }
                 .catch { emit(ForumPartialChange.Like.Failure(it)) }
@@ -129,6 +132,7 @@ class ForumViewModel @Inject constructor() :
         private fun ForumUiIntent.Unlike.produceLoadPartialChange() =
             TiebaApi.getInstance().unlikeForumFlow("$forumId", forumName, tbs)
                 .map<CommonResponse, ForumPartialChange.Unlike> {
+                    FollowedForumsRepository.invalidate()
                     ForumPartialChange.Unlike.Success
                 }
                 .catch { emit(ForumPartialChange.Unlike.Failure(it)) }

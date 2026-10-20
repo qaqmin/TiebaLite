@@ -157,6 +157,7 @@
     <string name="button_submit_dislike">不感兴趣</string>
     <string name="title_dislike">不喜欢推荐用户的理由</string>
     <string name="tip_refresh">上次阅读到此处，点击刷新</string>
+    <string name="personalized_followed_only">只看已关注的吧</string>
     <string name="tip_show_shortcut_in_thread">开启后，将在贴子内显示快速进吧的入口</string>
     <string name="tip_show_shortcut_in_thread_on">将在贴子内显示快速进吧的入口</string>
     <string name="button_finish">完成</string>
